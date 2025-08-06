@@ -1,121 +1,137 @@
-import { 
-  Box, 
-  Container, 
-  Heading, 
-  Text, 
-  VStack, 
-  HStack,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
-  SimpleGrid,
-  Button
-} from '@chakra-ui/react'
+import {
+  Row,
+  Col,
+  Card,
+  Statistic,
+  Button,
+  Typography,
+  Space
+} from 'antd'
+import {
+  FileTextOutlined,
+  FolderOutlined,
+  UserOutlined,
+  EyeOutlined,
+  PlusOutlined,
+} from '@ant-design/icons'
+import AdminLayout from '../../components/AdminLayout'
 import Head from 'next/head'
-import { useRouter } from 'next/router'
 
-export default function Dashboard() {
-  const router = useRouter()
-  const bgColor = 'white'
+const { Title, Text } = Typography
 
+export default function AdminHome() {
   return (
     <>
       <Head>
         <title>Dashboard - Globaliza Contabil</title>
       </Head>
       
-      <Box minH="100vh" bg="gray.50">
-        <Container maxW="container.xl" py={8}>
-          <VStack gap={8} align="stretch">
-            {/* Header */}
-            <Box>
-              <Heading size="lg" color="blue.600">
-                Dashboard
-              </Heading>
-              <Text color="gray.600">
-                Bem-vindo ao painel administrativo
-              </Text>
-            </Box>
+      <AdminLayout>
+        <div>
+          <Title level={2} style={{ marginBottom: 24 }}>
+            Dashboard
+          </Title>
+          
+          {/* Statistics Cards */}
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            <Col xs={24} sm={12} lg={6}>
+              <Card>
+                <Statistic
+                  title="Total de Posts"
+                  value={0}
+                  prefix={<FileTextOutlined />}
+                  valueStyle={{ color: '#3f8600' }}
+                />
+              </Card>
+            </Col>
+            
+            <Col xs={24} sm={12} lg={6}>
+              <Card>
+                <Statistic
+                  title="Categorias"
+                  value={0}
+                  prefix={<FolderOutlined />}
+                  valueStyle={{ color: '#1890ff' }}
+                />
+              </Card>
+            </Col>
+            
+            <Col xs={24} sm={12} lg={6}>
+              <Card>
+                <Statistic
+                  title="Usuários"
+                  value={1}
+                  prefix={<UserOutlined />}
+                  valueStyle={{ color: '#722ed1' }}
+                />
+              </Card>
+            </Col>
+            
+            <Col xs={24} sm={12} lg={6}>
+              <Card>
+                <Statistic
+                  title="Visualizações"
+                  value={0}
+                  prefix={<EyeOutlined />}
+                  valueStyle={{ color: '#cf1322' }}
+                />
+              </Card>
+            </Col>
+          </Row>
 
-            {/* Stats */}
-            <SimpleGrid columns={{ base: 1, md: 3 }} gap={6}>
-              <Stat
-                px={4}
-                py={5}
-                bg={bgColor}
-                shadow="base"
-                rounded="lg"
-              >
-                <StatLabel>Total de Posts</StatLabel>
-                <StatNumber>0</StatNumber>
-                <StatHelpText>Artigos publicados</StatHelpText>
-              </Stat>
-
-              <Stat
-                px={4}
-                py={5}
-                bg={bgColor}
-                shadow="base"
-                rounded="lg"
-              >
-                <StatLabel>Categorias</StatLabel>
-                <StatNumber>0</StatNumber>
-                <StatHelpText>Categorias criadas</StatHelpText>
-              </Stat>
-
-              <Stat
-                px={4}
-                py={5}
-                bg={bgColor}
-                shadow="base"
-                rounded="lg"
-              >
-                <StatLabel>Visualizações</StatLabel>
-                <StatNumber>0</StatNumber>
-                <StatHelpText>Total de visualizações</StatHelpText>
-              </Stat>
-            </SimpleGrid>
-
-            {/* Quick Actions */}
-            <Box bg={bgColor} p={6} rounded="lg" shadow="base">
-              <Heading size="md" mb={4}>
-                Ações Rápidas
-              </Heading>
-              
-              <HStack gap={4} flexWrap="wrap">
-                <Button colorScheme="blue" size="sm">
-                  Novo Post
-                </Button>
-                <Button colorScheme="green" size="sm">
-                  Nova Categoria
-                </Button>
-                <Button colorScheme="purple" size="sm">
-                  Gerenciar Usuários
-                </Button>
-                <Button 
-                  colorScheme="red" 
-                  size="sm"
-                  onClick={() => router.push('/adm')}
-                >
-                  Sair
-                </Button>
-              </HStack>
-            </Box>
-
-            {/* Recent Posts */}
-            <Box bg={bgColor} p={6} rounded="lg" shadow="base">
-              <Heading size="md" mb={4}>
-                Posts Recentes
-              </Heading>
-              
-              <Text color="gray.500" textAlign="center" py={8}>
-                Nenhum post criado ainda.
-              </Text>
-            </Box>
-          </VStack>
-        </Container>
-      </Box>
+          {/* Quick Actions and Recent Posts */}
+          <Row gutter={[16, 16]}>
+            <Col xs={24} lg={12}>
+              <Card title="Ações Rápidas" size="small">
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Button 
+                    type="primary" 
+                    icon={<PlusOutlined />}
+                    size="large"
+                    block
+                  >
+                    Criar Novo Post
+                  </Button>
+                  
+                  <Button 
+                    icon={<FolderOutlined />}
+                    size="large"
+                    block
+                  >
+                    Adicionar Categoria
+                  </Button>
+                  
+                  <Button 
+                    icon={<UserOutlined />}
+                    size="large"
+                    block
+                  >
+                    Gerenciar Usuários
+                  </Button>
+                </Space>
+              </Card>
+            </Col>
+            
+            <Col xs={24} lg={12}>
+              <Card title="Posts Recentes" size="small">
+                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                  <Text type="secondary">
+                    Nenhum post criado ainda.
+                  </Text>
+                  <br />
+                  <Button 
+                    type="primary" 
+                    icon={<PlusOutlined />}
+                    style={{ marginTop: 16 }}
+                  >
+                    Criar Primeiro Post
+                  </Button>
+                </div>
+              </Card>
+            </Col>
+          </Row>
+        </div>
+      </AdminLayout>
     </>
   )
 } 
