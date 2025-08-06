@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Usuários/Administradores do painel
+model Users {
+  id            Int       @id @default(autoincrement())
+  name          String
+  email         String    @unique
+  password      String
+  super_adm     Boolean   @default(false)
+  picture       String?
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  posts         Posts[]   // Relação com posts
+}
+
+// Categorias do blog
+model Categories {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  description        String?
+  description_seo    String?
+  key_word_seo       String?
+  url                String?  @unique
+  favorite           Boolean  @default(false)
+  is_active          Boolean  @default(true)
+  is_main            Boolean  @default(false)
+  order              Int      @unique
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  posts              Posts[]  // Relação com posts
+}
+
+// Posts/Artigos do blog
+model Posts {
+  id               Int        @id @default(autoincrement())
+  title            String
+  content          String
+  excerpt          String?
+  slug             String     @unique
+  featured_image   String?
+  status           String     @default("draft") // draft, published, archived
+  author_id        Int
+  category_id      Int
+  meta_title       String?
+  meta_description String?
+  key_word_seo     String?
+  view_count       Int        @default(0)
+  is_featured      Boolean    @default(false)
+  published_at     DateTime?
+  created_at       DateTime   @default(now())
+  updated_at       DateTime   @updatedAt
+  
+  // Relações
+  author           Users      @relation(fields: [author_id], references: [id])
+  category         Categories @relation(fields: [category_id], references: [id])
+}
+
+// Arquivos/Imagens
+model Files {
+  id         Int      @id @default(autoincrement())
+  name       String
+  url        String
+  size       Int?
+  type       String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+} 
