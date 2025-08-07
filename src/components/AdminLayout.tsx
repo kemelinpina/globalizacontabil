@@ -6,6 +6,8 @@ import {
   Avatar,
   Dropdown,
   theme,
+  Modal,
+  message,
 } from 'antd'
 import {
   DashboardOutlined,
@@ -29,8 +31,10 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false)
   const router = useRouter()
   const { user, loading, logout } = useAuth()
+  const [messageApi, contextHolder] = message.useMessage()
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken()
@@ -88,11 +92,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === 'logout') {
-      logout()
-      router.push('/adm')
+      setLogoutModalVisible(true)
     } else if (key.startsWith('/')) {
       router.push(key)
     }
+  }
+
+  const handleLogout = () => {
+    logout()
+    messageApi.success('Logout realizado com sucesso')
+    router.push('/adm')
   }
 
   // Se está carregando, mostrar loading
@@ -115,17 +124,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <Layout style={{ height: '100vh', overflow: 'hidden' }} className="admin-layout">
-      <Sider
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
-        style={{
-          background: colorBgContainer,
-          overflow: 'hidden',
-          justifyContent: 'space-between',
-        }}
-      >
+    <>
+      {contextHolder}
+      <Layout style={{ height: '100vh', overflow: 'hidden' }} className="admin-layout">
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          style={{
+            background: colorBgContainer,
+            overflow: 'hidden',
+            justifyContent: 'space-between',
+          }}
+        >
         <div style={{
           height: 64,
           display: 'flex',
@@ -278,5 +289,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </Content>
       </Layout>
     </Layout>
+
+    {/* Modal de Confirmação de Logout */}
+    <Modal
+      title="Confirmar Logout"
+      open={logoutModalVisible}
+      onOk={handleLogout}
+      onCancel={() => setLogoutModalVisible(false)}
+      okText="Sair"
+      cancelText="Cancelar"
+      okButtonProps={{ danger: true }}
+    >
+      <p>Tem certeza que deseja sair do sistema?</p>
+    </Modal>
+    </>
   )
 } 
