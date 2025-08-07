@@ -1,44 +1,73 @@
-import { Box, Container, Heading, Text, VStack } from '@chakra-ui/react'
+import React, { useState, useEffect } from 'react'
+import { Box } from '@chakra-ui/react'
 import Head from 'next/head'
+import HeroSection from '@/components/HeroSection'
+import PostsCarousel from '../components/PostsCarousel'
+import BannerWhatsApp from '../components/BannerWhatsApp'
+import Footer from '../components/Footer'
+
+interface Post {
+  id: number
+  title: string
+  excerpt: string
+  featured_image?: string
+  slug: string
+  published_at: string
+  author: {
+    name: string
+  }
+  category: {
+    name: string
+  }
+}
 
 export default function Home() {
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('/api/pg/posts?status=published&limit=6')
+        const data = await response.json()
+        setPosts(data.posts || [])
+      } catch (error) {
+        console.error('Erro ao buscar posts:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPosts()
+  }, [])
+
   return (
     <>
       <Head>
         <title>Globaliza Contabil - Blog</title>
-        <meta name="description" content="Blog sobre contabilidade, impostos e legislação" />
+        <meta name="description" content="Se torne um contador global com a Globaliza Contabil" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/icon.svg" />
         <link rel="apple-touch-icon" href="/icon.svg" />
       </Head>
-      
-      <Box as="main" minH="100vh" bg="gray.50">
-        <Container maxW="container.xl" py={8}>
-          <VStack gap={8} textAlign="center">
-            <Heading as="h1" size="2xl" color="blue.600">
-              Globaliza Contabil
-            </Heading>
-            
-            <Text fontSize="xl" color="gray.600">
-              Blog sobre contabilidade, impostos e legislação
-            </Text>
-            
-            <Box 
-              p={8} 
-              bg="white" 
-              borderRadius="lg" 
-              boxShadow="md"
-              w="full"
-            >
-              <Text fontSize="lg" color="gray.700">
-                Bem-vindo ao blog da Globaliza Contabil! 
-                Aqui você encontrará artigos sobre contabilidade, 
-                impostos, legislação e muito mais.
-              </Text>
-            </Box>
-          </VStack>
-        </Container>
+
+      {/* Hero Section */}
+      <HeroSection />
+
+      {/* Posts Carousel */}
+      <PostsCarousel 
+        title="Posts em Destaque"
+        subtitle="Conteúdo exclusivo para sua carreira contábil internacional"
+        posts={posts}
+      />
+
+      {/* WhatsApp Banner */}
+      <Box py={8}>
+        <BannerWhatsApp />
       </Box>
+
+      {/* Footer */}
+      <Footer />
     </>
   )
 } 

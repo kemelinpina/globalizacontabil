@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Layout,
   Menu,
@@ -19,6 +19,7 @@ import {
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
+import { useAuth } from '../contexts/AuthContext'
 
 const { Header, Sider, Content } = Layout
 
@@ -29,9 +30,17 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
   const router = useRouter()
+  const { user, loading, logout } = useAuth()
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken()
+
+  // Redirecionar para login se não estiver logado
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/adm')
+    }
+  }, [user, loading, router])
 
   const menuItems = [
     {
@@ -65,12 +74,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     {
       key: 'profile',
       icon: <UserOutlined />,
-      label: 'Meu Perfil',
-    },
-    {
-      key: 'settings',
-      icon: <SettingOutlined />,
-      label: 'Configurações',
+      label: 'Perfil',
     },
     {
       type: 'divider' as const,
@@ -79,33 +83,51 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       key: 'logout',
       icon: <LogoutOutlined />,
       label: 'Sair',
-      danger: true,
     },
   ]
 
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === 'logout') {
-      // Implementar logout
+      logout()
       router.push('/adm')
     } else if (key.startsWith('/')) {
       router.push(key)
     }
   }
 
+  // Se está carregando, mostrar loading
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh'
+      }}>
+        Carregando...
+      </div>
+    )
+  }
+
+  // Se não há usuário logado, não renderizar nada (será redirecionado)
+  if (!user) {
+    return null
+  }
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider 
-        trigger={null} 
-        collapsible 
+      <Sider
+        trigger={null}
+        collapsible
         collapsed={collapsed}
         style={{
           background: colorBgContainer,
         }}
       >
-        <div style={{ 
-          height: 64, 
-          display: 'flex', 
-          alignItems: 'center', 
+        <div style={{
+          height: 64,
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'center',
           borderBottom: '1px solid #f0f0f0'
         }}>
@@ -127,7 +149,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             />
           )}
         </div>
-        
+
         <Menu
           mode="inline"
           selectedKeys={[router.pathname]}
@@ -172,31 +194,32 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               e.currentTarget.style.backgroundColor = 'transparent'
             }}
             >
-              <Avatar 
+              <Avatar
                 size={collapsed ? 32 : 40}
+                src={user.picture}
                 icon={<UserOutlined />}
                 style={{ marginRight: collapsed ? 0 : 12 }}
               />
               {!collapsed && (
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ 
-                    fontSize: '14px', 
+                  <div style={{
+                    fontSize: '14px',
                     fontWeight: 500,
                     color: '#262626',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                   }}>
-                    Administrador
+                    {user.name}
                   </div>
-                  <div style={{ 
-                    fontSize: '12px', 
+                  <div style={{
+                    fontSize: '12px',
                     color: '#8c8c8c',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                   }}>
-                    admin@globaliza.com
+                    {user.email}
                   </div>
                 </div>
               )}
@@ -206,9 +229,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </Sider>
 
       <Layout>
-        <Header 
-          style={{ 
-            padding: 0, 
+        <Header
+          style={{
+            padding: 0,
             background: colorBgContainer,
             borderBottom: '1px solid #f0f0f0',
             display: 'flex',

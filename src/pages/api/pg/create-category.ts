@@ -7,14 +7,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { 
-      name, 
-      description, 
-      description_seo, 
-      key_word_seo, 
-      url, 
+    const {
+      name,
+      description,
+      url,
       favorite = false,
-      is_main = false
+      is_main = false,
+      is_active = true
     } = req.body
 
     // Validações básicas
@@ -40,6 +39,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (existingUrl) {
         return res.status(400).json({ message: 'URL já existe. Escolha outra.' })
       }
+
+      // Validar formato da URL (apenas letras, números, hífens e underscores)
+      const urlRegex = /^[a-z0-9-]+$/
+      if (!urlRegex.test(url)) {
+        return res.status(400).json({ 
+          message: 'URL deve conter apenas letras minúsculas, números, hífens e underscores' 
+        })
+      }
     }
 
     // Pegar a última ordem
@@ -54,12 +61,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       data: {
         name,
         description,
-        description_seo,
-        key_word_seo,
         url,
         favorite,
         is_main,
-        is_active: true,
+        is_active,
         order: newOrder
       }
     })

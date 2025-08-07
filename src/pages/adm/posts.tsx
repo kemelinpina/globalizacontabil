@@ -12,24 +12,11 @@ import {
   Badge,
   HStack,
   IconButton,
-  useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  VStack,
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
-  Select,
   useToast,
 } from '@chakra-ui/react'
 import { FiPlus, FiEdit, FiTrash2, FiEye } from 'react-icons/fi'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/router'
 import AdminLayout from '../../components/AdminLayout'
 import Head from 'next/head'
 
@@ -51,14 +38,10 @@ interface Post {
 export default function PostsPage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const router = useRouter()
   const toast = useToast()
 
-  useEffect(() => {
-    fetchPosts()
-  }, [])
-
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
       const response = await fetch('/api/pg/posts')
       const data = await response.json()
@@ -75,7 +58,11 @@ export default function PostsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [toast])
+
+  useEffect(() => {
+    fetchPosts()
+  }, [fetchPosts])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -118,7 +105,7 @@ export default function PostsPage() {
             <Button
               leftIcon={<FiPlus />}
               colorScheme="blue"
-              onClick={onOpen}>
+              onClick={() => router.push('/adm/posts/create')}>
               Novo Post
             </Button>
           </HStack>
@@ -138,7 +125,7 @@ export default function PostsPage() {
               <Button
                 leftIcon={<FiPlus />}
                 colorScheme="blue"
-                onClick={onOpen}>
+                onClick={() => router.push('/adm/posts/create')}>
                 Criar Primeiro Post
               </Button>
             </Box>
@@ -206,67 +193,6 @@ export default function PostsPage() {
             </Box>
           )}
         </Box>
-
-        {/* Modal para criar/editar post */}
-        <Modal isOpen={isOpen} onClose={onClose} size="xl">
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Criar Novo Post</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <VStack spacing={4}>
-                <FormControl isRequired>
-                  <FormLabel>Título</FormLabel>
-                  <Input placeholder="Digite o título do post" />
-                </FormControl>
-                
-                <FormControl isRequired>
-                  <FormLabel>Slug</FormLabel>
-                  <Input placeholder="titulo-do-post" />
-                </FormControl>
-                
-                <FormControl isRequired>
-                  <FormLabel>Categoria</FormLabel>
-                  <Select placeholder="Selecione uma categoria">
-                    <option value="1">Contabilidade</option>
-                    <option value="2">Impostos</option>
-                    <option value="3">Legislação</option>
-                  </Select>
-                </FormControl>
-                
-                <FormControl>
-                  <FormLabel>Resumo</FormLabel>
-                  <Textarea placeholder="Digite um resumo do post" />
-                </FormControl>
-                
-                <FormControl isRequired>
-                  <FormLabel>Conteúdo</FormLabel>
-                  <Textarea 
-                    placeholder="Digite o conteúdo do post" 
-                    rows={10}
-                  />
-                </FormControl>
-                
-                <FormControl>
-                  <FormLabel>Status</FormLabel>
-                  <Select defaultValue="draft">
-                    <option value="draft">Rascunho</option>
-                    <option value="published">Publicado</option>
-                    <option value="archived">Arquivado</option>
-                  </Select>
-                </FormControl>
-              </VStack>
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="ghost" mr={3} onClick={onClose}>
-                Cancelar
-              </Button>
-              <Button colorScheme="blue">
-                Salvar Post
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
       </AdminLayout>
     </>
   )

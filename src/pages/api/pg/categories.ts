@@ -1,38 +1,50 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
 
+interface WhereClause {
+  is_active?: boolean
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ message: 'Method not allowed' })
-  }
+  if (req.method === 'GET') {
+    try {
+      const { is_active } = req.query
 
-  try {
-    const { active = 'true' } = req.query
-
-    // Buscar categorias
-    const categories = await prisma.categories.findMany({
-      where: {
-        is_active: active === 'true'
-      },
-      orderBy: {
-        order: 'asc'
-      },
-      include: {
-        _count: {
-          select: {
-            posts: true
-          }
-        }
+      const where: WhereClause = {}
+      
+      if (is_active !== undefined) {
+        where.is_active = is_active === 'true'
       }
-    })
 
-    return res.status(200).json({
-      categories,
-      total: categories.length
-    })
+      const categories = await prisma.categories.findMany({
+        where,
+        include: {
+          _count: {
+            select: {
+              posts: true
+            }
+          }
+        },
+        orderBy: {
+          order: 'asc'
+        }
+      })
 
-  } catch (error) {
-    console.error('Erro ao buscar categorias:', error)
-    return res.status(500).json({ message: 'Erro interno do servidor' })
+      // Adicionar URL completa com prefixo
+      const categoriesWithUrl = categories.map(category => ({
+        ...category,
+        full_url: category.url ? `/categoria/${category.url}` : null
+      }))
+
+      return res.status(200).json({
+        categories: categoriesWithUrl
+      })
+
+    } catch (error) {
+      console.error('Erro ao buscar categorias:', error)
+      return res.status(500).json({ message: 'Erro interno do servidor' })
+    }
   }
+
+  return res.status(405).json({ message: 'Method not allowed' })
 } 
