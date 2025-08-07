@@ -14,6 +14,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       is_active = true
     } = req.body
 
+    console.log('Dados recebidos:', { name, color, icon, is_active })
+
     // Validações básicas
     if (!name) {
       return res.status(400).json({ message: 'Nome da categoria é obrigatório' })
@@ -28,12 +30,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ message: 'Categoria com este nome já existe' })
     }
 
-    // Validar formato da cor (hexadecimal)
-    const colorRegex = /^#[0-9A-F]{6}$/i
-    if (!colorRegex.test(color)) {
-      return res.status(400).json({ 
-        message: 'Cor deve estar no formato hexadecimal (ex: #013F71)' 
-      })
+    // Validar formato da cor (hexadecimal) - mais flexível
+    let validColor = color
+    if (typeof color === 'object' && color.toHexString) {
+      // Se for um objeto do ColorPicker, extrair o valor hex
+      validColor = color.toHexString()
+    } else if (typeof color === 'string') {
+      // Se for string, verificar se é um hex válido
+      const colorRegex = /^#[0-9A-F]{6}$/i
+      if (!colorRegex.test(color)) {
+        return res.status(400).json({ 
+          message: 'Cor deve estar no formato hexadecimal (ex: #013F71)' 
+        })
+      }
+      validColor = color
+    } else {
+      // Valor padrão se não for válido
+      validColor = "#013F71"
     }
 
     // Validar formato do ícone (se fornecido)
@@ -48,11 +61,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
+    console.log('Dados validados:', { name, validColor, icon, is_active })
+
     // Criar a categoria
     const category = await prisma.categories.create({
       data: {
         name,
-        color,
+        color: validColor,
         icon,
         is_active
       }

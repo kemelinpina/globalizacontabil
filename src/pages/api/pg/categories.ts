@@ -26,18 +26,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
         },
         orderBy: {
-          order: 'asc'
+          name: 'asc'
         }
       })
 
-      // Adicionar URL completa com prefixo
-      const categoriesWithUrl = categories.map(category => ({
-        ...category,
-        full_url: category.url ? `/categoria/${category.url}` : null
-      }))
-
       return res.status(200).json({
-        categories: categoriesWithUrl
+        categories
       })
 
     } catch (error) {

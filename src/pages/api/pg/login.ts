@@ -38,7 +38,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json({
       message: 'Login realizado com sucesso',
-      user: userWithoutPassword
+      user: userWithoutPassword,
+      token: user.email // Usando email como token temporário
     })
 
   } catch (error) {

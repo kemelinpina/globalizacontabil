@@ -11,17 +11,20 @@ import {
   Switch,
   DatePicker,
   Upload,
+  Spin,
 } from 'antd'
+import dayjs from 'dayjs'
 import {
   SaveOutlined,
   EyeOutlined,
   UploadOutlined,
   PlusOutlined,
+  ArrowLeftOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
-import AdminLayout from '../../../components/AdminLayout'
-import PostEditor from '../../../components/PostEditor'
-import { useAuth } from '../../../contexts/AuthContext'
+import AdminLayout from '../../../../components/AdminLayout'
+import PostEditor from '../../../../components/PostEditor'
+import { useAuth } from '../../../../contexts/AuthContext'
 import Head from 'next/head'
 
 const { TextArea } = Input
@@ -31,6 +34,35 @@ interface Category {
   id: number
   name: string
   is_active: boolean
+}
+
+interface Post {
+  id: number
+  title: string
+  slug: string
+  content: string
+  excerpt?: string
+  status: string
+  meta_title?: string
+  meta_description?: string
+  key_word_seo?: string
+  featured_image?: string
+  social_image?: string
+  is_featured: boolean
+  is_pinned: boolean
+  reading_time?: number
+  tags?: string
+  published_at?: string
+  category_id: number
+  author_id: number
+  category: {
+    id: number
+    name: string
+  }
+  author: {
+    id: number
+    name: string
+  }
 }
 
 interface FormValues {
@@ -51,13 +83,16 @@ interface FormValues {
   published_at?: string
 }
 
-export default function CreatePost() {
+export default function EditPost() {
   const [form] = Form.useForm()
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
   const [loadingCategories, setLoadingCategories] = useState(true)
+  const [loadingPost, setLoadingPost] = useState(true)
   const [content, setContent] = useState('')
+  const [post, setPost] = useState<Post | null>(null)
   const router = useRouter()
+  const { id } = router.query
   const { user } = useAuth()
 
   // Buscar categorias
@@ -78,6 +113,53 @@ export default function CreatePost() {
     fetchCategories()
   }, [])
 
+  // Buscar post
+  useEffect(() => {
+    const fetchPost = async () => {
+      if (!id) return
+
+      try {
+        const response = await fetch(`/api/pg/posts/${id}`)
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Erro ao carregar post')
+        }
+
+        setPost(data.post)
+        setContent(data.post.content)
+
+                            // Preencher formulário
+                    form.setFieldsValue({
+                      title: data.post.title,
+                      slug: data.post.slug,
+                      category_id: data.post.category_id.toString(),
+                      status: data.post.status,
+                      excerpt: data.post.excerpt,
+                      meta_title: data.post.meta_title,
+                      meta_description: data.post.meta_description,
+                      key_word_seo: data.post.key_word_seo,
+                      featured_image: data.post.featured_image,
+                      social_image: data.post.social_image,
+                      is_featured: data.post.is_featured,
+                      is_pinned: data.post.is_pinned,
+                      reading_time: data.post.reading_time,
+                      tags: data.post.tags,
+                      published_at: data.post.published_at ? dayjs(data.post.published_at) : null,
+                    })
+
+      } catch (error) {
+        console.error('Erro ao buscar post:', error)
+        message.error('Erro ao carregar post')
+        router.push('/adm/posts')
+      } finally {
+        setLoadingPost(false)
+      }
+    }
+
+    fetchPost()
+  }, [id, form, router])
+
   const handleSubmit = async (values: FormValues) => {
     if (!content.trim()) {
       message.error('O conteúdo é obrigatório')
@@ -86,6 +168,11 @@ export default function CreatePost() {
 
     if (!user) {
       message.error('Usuário não autenticado')
+      return
+    }
+
+    if (!post) {
+      message.error('Post não encontrado')
       return
     }
 
@@ -119,8 +206,8 @@ export default function CreatePost() {
         published_at: values.published_at ? new Date(values.published_at).toISOString() : null
       }
 
-      const response = await fetch('/api/pg/create-post', {
-        method: 'POST',
+      const response = await fetch(`/api/pg/posts/${id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -130,24 +217,54 @@ export default function CreatePost() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || 'Erro ao criar post')
+        throw new Error(data.message || 'Erro ao atualizar post')
       }
 
-      message.success('Post criado com sucesso!')
+      message.success('Post atualizado com sucesso!')
       router.push('/adm/posts')
 
     } catch (error) {
-      console.error('Erro ao criar post:', error)
-      message.error(error instanceof Error ? error.message : 'Erro ao criar post')
+      console.error('Erro ao atualizar post:', error)
+      message.error(error instanceof Error ? error.message : 'Erro ao atualizar post')
     } finally {
       setLoading(false)
     }
   }
 
+  if (loadingPost) {
+    return (
+      <AdminLayout>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          height: 'calc(100vh - 140px)'
+        }}>
+          <Spin size="large" />
+        </div>
+      </AdminLayout>
+    )
+  }
+
+  if (!post) {
+    return (
+      <AdminLayout>
+        <div style={{ padding: '24px' }}>
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <h2>Post não encontrado</h2>
+            <Button onClick={() => router.push('/adm/posts')}>
+              Voltar para Posts
+            </Button>
+          </div>
+        </div>
+      </AdminLayout>
+    )
+  }
+
   return (
     <>
       <Head>
-        <title>Criar Post - Globaliza Contabil</title>
+        <title>Editar Post - Globaliza Contabil</title>
       </Head>
 
       <AdminLayout>
@@ -165,13 +282,21 @@ export default function CreatePost() {
               alignItems: 'center',
               marginBottom: '16px'
             }}>
-              <h1 style={{ 
-                fontSize: '24px', 
-                fontWeight: 'bold', 
-                margin: 0 
-              }}>
-                Criar Novo Post
-              </h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Button 
+                  icon={<ArrowLeftOutlined />}
+                  onClick={() => router.push('/adm/posts')}
+                >
+                  Voltar
+                </Button>
+                <h1 style={{ 
+                  fontSize: '24px', 
+                  fontWeight: 'bold', 
+                  margin: 0 
+                }}>
+                  Editar Post
+                </h1>
+              </div>
               <Space>
                 <Button 
                   icon={<EyeOutlined />}
@@ -185,7 +310,7 @@ export default function CreatePost() {
                   loading={loading}
                   onClick={() => form.submit()}
                 >
-                  Publicar
+                  Atualizar
                 </Button>
               </Space>
             </div>
@@ -375,14 +500,7 @@ export default function CreatePost() {
                     onClick={() => form.submit()}
                     style={{ width: '100%' }}
                   >
-                    Publicar
-                  </Button>
-                  <Button 
-                    onClick={() => form.submit()}
-                    loading={loading}
-                    style={{ width: '100%' }}
-                  >
-                    Salvar Rascunho
+                    Atualizar
                   </Button>
                   <Button 
                     onClick={() => router.push('/adm/posts')}
@@ -398,4 +516,4 @@ export default function CreatePost() {
       </AdminLayout>
     </>
   )
-} 
+}

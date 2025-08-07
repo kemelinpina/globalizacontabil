@@ -1,21 +1,18 @@
+import React, { useState, useEffect, useCallback } from 'react'
 import {
-  Box,
-  Heading,
-  Text,
   Button,
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Badge,
-  HStack,
-  IconButton,
-  useToast,
-} from '@chakra-ui/react'
-import { FiPlus, FiEdit, FiTrash2, FiEye } from 'react-icons/fi'
-import { useState, useEffect, useCallback } from 'react'
+  Tag,
+  Space,
+  message,
+  Popconfirm,
+} from 'antd'
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+} from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import AdminLayout from '../../components/AdminLayout'
 import Head from 'next/head'
@@ -39,7 +36,6 @@ export default function PostsPage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
-  const toast = useToast()
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -48,17 +44,11 @@ export default function PostsPage() {
       setPosts(data.posts || [])
     } catch (error) {
       console.error('Erro ao buscar posts:', error)
-      toast({
-        title: 'Erro',
-        description: 'Erro ao carregar posts',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      })
+      message.error('Erro ao carregar posts')
     } finally {
       setLoading(false)
     }
-  }, [toast])
+  }, [])
 
   useEffect(() => {
     fetchPosts()
@@ -69,11 +59,11 @@ export default function PostsPage() {
       case 'published':
         return 'green'
       case 'draft':
-        return 'yellow'
+        return 'orange'
       case 'archived':
         return 'red'
       default:
-        return 'gray'
+        return 'default'
     }
   }
 
@@ -90,6 +80,105 @@ export default function PostsPage() {
     }
   }
 
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await fetch(`/api/pg/posts/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        message.success('Post excluído com sucesso')
+        fetchPosts()
+      } else {
+        const data = await response.json()
+        message.error(data.message || 'Erro ao excluir post')
+      }
+    } catch (error) {
+      console.error('Erro ao excluir post:', error)
+      message.error('Erro ao excluir post')
+    }
+  }
+
+  const columns = [
+    {
+      title: 'Título',
+      dataIndex: 'title',
+      key: 'title',
+      render: (text: string) => (
+        <span style={{ fontWeight: 500 }}>{text}</span>
+      ),
+    },
+    {
+      title: 'Categoria',
+      dataIndex: 'category',
+      key: 'category',
+      render: (category: { name: string }) => (
+        <Tag color="blue">{category.name}</Tag>
+      ),
+    },
+    {
+      title: 'Autor',
+      dataIndex: 'author',
+      key: 'author',
+      render: (author: { name: string }) => author.name,
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => (
+        <Tag color={getStatusColor(status)}>
+          {getStatusText(status)}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Visualizações',
+      dataIndex: 'view_count',
+      key: 'view_count',
+      render: (count: number) => count || 0,
+    },
+    {
+      title: 'Criado em',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (date: string) => new Date(date).toLocaleDateString('pt-BR'),
+    },
+    {
+      title: 'Ações',
+      key: 'actions',
+      render: (record: Post) => (
+        <Space>
+          <Button
+            type="text"
+            icon={<EyeOutlined />}
+            size="small"
+            onClick={() => router.push(`/post/${record.slug}`)}
+          />
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => router.push(`/adm/posts/edit/${record.id}`)}
+          />
+          <Popconfirm
+            title="Tem certeza que deseja excluir este post?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Sim"
+            cancelText="Não"
+          >
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              size="small"
+            />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ]
+
   return (
     <>
       <Head>
@@ -97,102 +186,49 @@ export default function PostsPage() {
       </Head>
       
       <AdminLayout>
-        <Box maxW="7xl" mx={'auto'} pt={5} px={{ base: 2, sm: 12, md: 17 }}>
-          <HStack justify="space-between" mb={6}>
-            <Heading size="lg">
+        <div style={{ padding: '24px' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: '24px'
+          }}>
+            <h1 style={{ 
+              fontSize: '24px', 
+              fontWeight: 'bold', 
+              margin: 0 
+            }}>
               Posts
-            </Heading>
+            </h1>
             <Button
-              leftIcon={<FiPlus />}
-              colorScheme="blue"
-              onClick={() => router.push('/adm/posts/create')}>
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => router.push('/adm/posts/create')}
+            >
               Novo Post
             </Button>
-          </HStack>
+          </div>
 
-          {loading ? (
-            <Text>Carregando...</Text>
-          ) : posts.length === 0 ? (
-            <Box
-              bg="white"
-              p={8}
-              rounded="lg"
-              shadow="md"
-              textAlign="center">
-              <Text color="gray.500" mb={4}>
-                Nenhum post criado ainda.
-              </Text>
-              <Button
-                leftIcon={<FiPlus />}
-                colorScheme="blue"
-                onClick={() => router.push('/adm/posts/create')}>
-                Criar Primeiro Post
-              </Button>
-            </Box>
-          ) : (
-            <Box
-              bg="white"
-              rounded="lg"
-              shadow="md"
-              overflow="hidden">
-              <Table variant="simple">
-                <Thead>
-                  <Tr>
-                    <Th>Título</Th>
-                    <Th>Categoria</Th>
-                    <Th>Autor</Th>
-                    <Th>Status</Th>
-                    <Th>Visualizações</Th>
-                    <Th>Criado em</Th>
-                    <Th>Ações</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {posts.map((post) => (
-                    <Tr key={post.id}>
-                      <Td fontWeight="medium">{post.title}</Td>
-                      <Td>{post.category.name}</Td>
-                      <Td>{post.author.name}</Td>
-                      <Td>
-                        <Badge colorScheme={getStatusColor(post.status)}>
-                          {getStatusText(post.status)}
-                        </Badge>
-                      </Td>
-                      <Td>{post.view_count}</Td>
-                      <Td>
-                        {new Date(post.created_at).toLocaleDateString('pt-BR')}
-                      </Td>
-                      <Td>
-                        <HStack spacing={2}>
-                          <IconButton
-                            aria-label="Ver post"
-                            icon={<FiEye />}
-                            size="sm"
-                            variant="ghost"
-                          />
-                          <IconButton
-                            aria-label="Editar post"
-                            icon={<FiEdit />}
-                            size="sm"
-                            variant="ghost"
-                            colorScheme="blue"
-                          />
-                          <IconButton
-                            aria-label="Excluir post"
-                            icon={<FiTrash2 />}
-                            size="sm"
-                            variant="ghost"
-                            colorScheme="red"
-                          />
-                        </HStack>
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </Box>
-          )}
-        </Box>
+          <div style={{
+            background: 'white',
+            borderRadius: '8px',
+            padding: '24px',
+          }}>
+            <Table
+              columns={columns}
+              dataSource={posts}
+              rowKey="id"
+              loading={loading}
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total, range) =>
+                  `${range[0]}-${range[1]} de ${total} posts`,
+              }}
+            />
+          </div>
+        </div>
       </AdminLayout>
     </>
   )

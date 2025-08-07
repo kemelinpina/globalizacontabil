@@ -44,3 +44,34 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, input, textarea, select {
 .ant-tooltip-arrow::before {
   background-color: #013F71 !important;
 }
+
+/* Remover avisos do CKEditor */
+.cke_notification {
+  display: none !important;
+}
+
+.cke_notification_area {
+  display: none !important;
+}
+
+/* Remover bordas e outlines do CKEditor */
+.cke_editor {
+  border: none !important;
+}
+
+.cke_top {
+  border: none !important;
+}
+
+.cke_bottom {
+  border: none !important;
+}
+
+/* Remover avisos de atualização */
+.cke_notification_warning {
+  display: none !important;
+}
+
+.cke_notification_info {
+  display: none !important;
+}

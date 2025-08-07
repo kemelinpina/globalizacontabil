@@ -9,7 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         limit = '10', 
         status,
         category_id,
-        search 
+        search,
+        slug
       } = req.query
 
       const pageNumber = parseInt(page as string)
@@ -33,6 +34,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           { content: { contains: search as string, mode: 'insensitive' } },
           { excerpt: { contains: search as string, mode: 'insensitive' } },
         ]
+      }
+      
+      if (slug) {
+        where.slug = slug as string
       }
 
       // Buscar posts

@@ -1,16 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { CKEditor } from 'ckeditor4-react'
 
-// Declaração de tipos para o CKEditor
-declare global {
-  interface Window {
-    CKEDITOR: {
-      disableAutoInline: boolean
-      [key: string]: unknown
-    }
-  }
-}
-
 interface PostEditorProps {
   value: string
   onChange: (data: string) => void
@@ -27,13 +17,6 @@ interface CKEditorEvent {
 export default function PostEditor({ value, onChange }: PostEditorProps) {
   const editorRef = useRef<CKEditorEvent['editor'] | null>(null)
 
-  useEffect(() => {
-    // Configuração do CKEditor
-    if (typeof window !== 'undefined' && window.CKEDITOR) {
-      window.CKEDITOR.disableAutoInline = true
-    }
-  }, [])
-
   const editorConfig = {
     height: 400,
     toolbar: [
@@ -44,7 +27,7 @@ export default function PostEditor({ value, onChange }: PostEditorProps) {
       '/',
       { name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize'] },
       { name: 'colors', items: ['TextColor', 'BGColor'] },
-      { name: 'tools', items: ['Maximize'] }
+      { name: 'tools', items: ['Maximize', 'Source'] }
     ],
     removeButtons: '',
     format_tags: 'p;h1;h2;h3;pre',
@@ -57,17 +40,46 @@ export default function PostEditor({ value, onChange }: PostEditorProps) {
     colorButton_colorsPerRow: 6,
     colorButton_enableAutomatic: false,
     colorButton_enableMore: true,
+    allowedContent: true,
+    autoUpdateElement: true,
+    disableAutoInline: true,
+    removePlugins: 'elementspath,resize',
+    resize_enabled: false,
+    startupShowBorders: false,
+    startupOutlineBlocks: false,
+    startupFocus: false,
+    autoParagraph: false,
+    fillEmptyBlocks: false,
     on: {
       instanceReady: function(evt: CKEditorEvent) {
         editorRef.current = evt.editor
         console.log('CKEditor carregado com sucesso!')
+        
+        // Definir o conteúdo inicial
+        if (value && value.trim()) {
+          evt.editor.setData(value)
+        }
       },
       change: function(evt: CKEditorEvent) {
+        const data = evt.editor.getData()
+        onChange(data)
+      },
+      blur: function(evt: CKEditorEvent) {
         const data = evt.editor.getData()
         onChange(data)
       }
     }
   }
+
+  // Atualizar o conteúdo quando o valor mudar externamente
+  useEffect(() => {
+    if (editorRef.current && value !== undefined) {
+      const currentData = editorRef.current.getData()
+      if (currentData !== value) {
+        editorRef.current.setData(value)
+      }
+    }
+  }, [value])
 
   return (
     <div style={{ border: '1px solid #d9d9d9', borderRadius: '6px' }}>
@@ -78,7 +90,7 @@ export default function PostEditor({ value, onChange }: PostEditorProps) {
           const data = evt.editor.getData()
           onChange(data)
         }}
-      />
+            />
     </div>
   )
 } 

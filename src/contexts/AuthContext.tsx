@@ -32,21 +32,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // Verificar se há um token no localStorage
       const token = localStorage.getItem('auth_token')
+      const savedUser = localStorage.getItem('auth_user')
 
-      if (token) {
-        // Fazer uma requisição para verificar se o token ainda é válido
-        const response = await fetch('/api/pg/check-auth', {
-          headers: {
-            'Authorization': `Bearer ${token}`
+      if (token && savedUser) {
+        try {
+          // Tentar fazer uma requisição para verificar se o token ainda é válido
+          const response = await fetch('/api/pg/check-auth', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+
+          if (response.ok) {
+            const userData = await response.json()
+            setUser(userData.user)
+            // Atualizar dados salvos
+            localStorage.setItem('auth_user', JSON.stringify(userData.user))
+          } else {
+            // Token inválido, limpar dados
+            localStorage.removeItem('auth_token')
+            localStorage.removeItem('auth_user')
           }
-        })
-
-        if (response.ok) {
-          const userData = await response.json()
-          setUser(userData.user)
-        } else {
-          // Token inválido, remover do localStorage
-          localStorage.removeItem('auth_token')
+        } catch (error) {
+          // Se não conseguir verificar online, usar dados salvos
+          console.log('Usando dados salvos localmente')
+          setUser(JSON.parse(savedUser))
         }
       }
     } catch (error) {
@@ -76,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Salvar token e dados do usuário
       localStorage.setItem('auth_token', data.token || 'dummy_token')
+      localStorage.setItem('auth_user', JSON.stringify(data.user))
       setUser(data.user)
 
       return true
@@ -87,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem('auth_token')
+    localStorage.removeItem('auth_user')
     setUser(null)
   }
 

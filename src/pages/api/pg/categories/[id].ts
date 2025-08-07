@@ -13,11 +13,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const {
         name,
-        description,
-        url,
-        favorite,
-        is_main,
-        is_active
+        color = "#013F71",
+        icon,
+        is_active = true
       } = req.body
 
       // Validações básicas
@@ -46,24 +44,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ message: 'Categoria com este nome já existe' })
       }
 
-      // Verificar se a URL já existe (se fornecida)
-      if (url) {
-        const duplicateUrl = await prisma.categories.findFirst({
-          where: {
-            url,
-            id: { not: categoryId }
-          }
-        })
-
-        if (duplicateUrl) {
-          return res.status(400).json({ message: 'URL já existe. Escolha outra.' })
-        }
-
-        // Validar formato da URL (apenas letras, números, hífens e underscores)
-        const urlRegex = /^[a-z0-9-]+$/
-        if (!urlRegex.test(url)) {
+      // Validar formato da cor (hexadecimal) - mais flexível
+      let validColor = color
+      if (typeof color === 'object' && color.toHexString) {
+        // Se for um objeto do ColorPicker, extrair o valor hex
+        validColor = color.toHexString()
+      } else if (typeof color === 'string') {
+        // Se for string, verificar se é um hex válido
+        const colorRegex = /^#[0-9A-F]{6}$/i
+        if (!colorRegex.test(color)) {
           return res.status(400).json({ 
-            message: 'URL deve conter apenas letras minúsculas, números, hífens e underscores' 
+            message: 'Cor deve estar no formato hexadecimal (ex: #013F71)' 
+          })
+        }
+        validColor = color
+      } else {
+        // Valor padrão se não for válido
+        validColor = "#013F71"
+      }
+
+      // Validar formato do ícone (se fornecido)
+      if (icon) {
+        const allowedExtensions = ['.png', '.svg', '.webp', '.jpg', '.jpeg']
+        const iconExtension = icon.toLowerCase().split('.').pop()
+        
+        if (!iconExtension || !allowedExtensions.includes(`.${iconExtension}`)) {
+          return res.status(400).json({ 
+            message: 'Ícone deve ser um arquivo PNG, SVG, WebP, JPG ou JPEG' 
           })
         }
       }
@@ -73,10 +80,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         where: { id: categoryId },
         data: {
           name,
-          description,
-          url,
-          favorite,
-          is_main,
+          color,
+          icon,
           is_active
         }
       })

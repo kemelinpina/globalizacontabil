@@ -11,6 +11,7 @@ import {
   Tag,
   Table,
   Switch,
+  ColorPicker,
 } from 'antd'
 import {
   PlusOutlined,
@@ -25,14 +26,11 @@ import Head from 'next/head'
 interface Category {
   id: number
   name: string
-  description: string | null
-  url: string | null
-  full_url: string | null
-  favorite: boolean
-  is_main: boolean
+  color: string
+  icon?: string
   is_active: boolean
-  order: number
   created_at: string
+  updated_at: string
   _count: {
     posts: number
   }
@@ -40,10 +38,8 @@ interface Category {
 
 interface FormValues {
   name: string
-  description?: string
-  url?: string
-  favorite: boolean
-  is_main: boolean
+  color: string
+  icon?: string
   is_active: boolean
 }
 
@@ -82,10 +78,8 @@ export default function CategoriesPage() {
     setEditingCategory(category)
     form.setFieldsValue({
       name: category.name,
-      description: category.description,
-      url: category.url,
-      favorite: category.favorite,
-      is_main: category.is_main,
+      color: category.color,
+      icon: category.icon,
       is_active: category.is_active,
     })
     setModalVisible(true)
@@ -112,6 +106,17 @@ export default function CategoriesPage() {
 
   const handleSubmit = async (values: FormValues) => {
     try {
+      // Processar o valor da cor
+      let colorValue = values.color
+      if (typeof colorValue === 'object' && colorValue && 'toHexString' in colorValue) {
+        colorValue = (colorValue as { toHexString: () => string }).toHexString()
+      }
+
+      const submitData = {
+        ...values,
+        color: colorValue
+      }
+
       const url = editingCategory 
         ? `/api/pg/categories/${editingCategory.id}`
         : '/api/pg/create-category'
@@ -123,7 +128,7 @@ export default function CategoriesPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(submitData),
       })
 
       const data = await response.json()
@@ -152,24 +157,58 @@ export default function CategoriesPage() {
       key: 'name',
       render: (text: string, record: Category) => (
         <Space>
-          <span style={{ fontWeight: 500 }}>{text}</span>
-          {record.favorite && <Tag color="gold">Favorita</Tag>}
-          {record.is_main && <Tag color="blue">Principal</Tag>}
+          <Tag color={record.color} style={{ 
+            color: record.color === '#013F71' ? 'white' : 'inherit',
+            fontWeight: 500 
+          }}>
+            {text}
+          </Tag>
         </Space>
       ),
     },
     {
-      title: 'Descrição',
-      dataIndex: 'description',
-      key: 'description',
-      render: (text: string) => text || '-',
-      ellipsis: true,
+      title: 'Cor',
+      dataIndex: 'color',
+      key: 'color',
+      render: (color: string) => (
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px' 
+        }}>
+          <div style={{
+            width: '20px',
+            height: '20px',
+            backgroundColor: color,
+            borderRadius: '4px',
+            border: '1px solid #d9d9d9'
+          }} />
+          <span>{color}</span>
+        </div>
+      ),
     },
     {
-      title: 'URL',
-      dataIndex: 'full_url',
-      key: 'url',
-      render: (text: string) => text || '-',
+      title: 'Ícone',
+      dataIndex: 'icon',
+      key: 'icon',
+      render: (icon: string) => icon ? (
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px' 
+        }}>
+          <img 
+            src={icon} 
+            alt="Ícone" 
+            style={{ 
+              width: '20px', 
+              height: '20px',
+              objectFit: 'contain'
+            }} 
+          />
+          <span>{icon.split('/').pop()}</span>
+        </div>
+      ) : '-',
     },
     {
       title: 'Posts',
@@ -188,11 +227,6 @@ export default function CategoriesPage() {
           {active ? 'Ativa' : 'Inativa'}
         </Tag>
       ),
-    },
-    {
-      title: 'Ordem',
-      dataIndex: 'order',
-      key: 'order',
     },
     {
       title: 'Ações',
@@ -290,8 +324,7 @@ export default function CategoriesPage() {
             layout="vertical"
             onFinish={handleSubmit}
             initialValues={{
-              favorite: false,
-              is_main: false,
+              color: '#013F71',
               is_active: true,
             }}
           >
@@ -304,36 +337,31 @@ export default function CategoriesPage() {
             </Form.Item>
 
             <Form.Item
-              name="description"
-              label="Descrição"
+              name="color"
+              label="Cor do Badge"
             >
-              <Input.TextArea 
-                rows={3}
-                placeholder="Digite uma descrição para a categoria"
+              <ColorPicker 
+                defaultValue="#013F71"
+                presets={[
+                  {
+                    label: 'Cores da Marca',
+                    colors: [
+                      '#013F71', // Primary
+                      '#FA0A0A', // Accent
+                      '#66CC33', // Success
+                      '#0876D0', // Info
+                    ],
+                  },
+                ]}
+                format="hex"
               />
             </Form.Item>
 
             <Form.Item
-              name="url"
-              label="URL"
+              name="icon"
+              label="URL do Ícone (opcional)"
             >
-              <Input placeholder="ex: contabilidade, impostos, legislacao" />
-            </Form.Item>
-
-            <Form.Item
-              name="favorite"
-              label="Favorita"
-              valuePropName="checked"
-            >
-              <Switch />
-            </Form.Item>
-
-            <Form.Item
-              name="is_main"
-              label="Categoria Principal"
-              valuePropName="checked"
-            >
-              <Switch />
+              <Input placeholder="https://exemplo.com/icon.svg" />
             </Form.Item>
 
             <Form.Item
