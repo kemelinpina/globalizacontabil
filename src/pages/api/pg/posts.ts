@@ -1,6 +1,17 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
 
+interface WhereClause {
+  status?: string
+  category_id?: number
+  slug?: string
+  OR?: Array<{
+    title?: { contains: string }
+    content?: { contains: string }
+    excerpt?: { contains: string }
+  }>
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
@@ -18,10 +29,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const skip = (pageNumber - 1) * limitNumber
 
       // Construir where clause
-      const where: any = {}
+      const where: WhereClause = {}
       
       if (status) {
-        where.status = status
+        where.status = status as string
       }
       
       if (category_id) {
@@ -29,10 +40,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       
       if (search) {
+        // Para SQLite, usar contains sem mode
         where.OR = [
-          { title: { contains: search as string, mode: 'insensitive' } },
-          { content: { contains: search as string, mode: 'insensitive' } },
-          { excerpt: { contains: search as string, mode: 'insensitive' } },
+          { title: { contains: search as string } },
+          { content: { contains: search as string } },
+          { excerpt: { contains: search as string } },
         ]
       }
       
@@ -54,7 +66,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           category: {
             select: {
               id: true,
-              name: true
+              name: true,
+              color: true
             }
           }
         },
@@ -79,7 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
 
     } catch (error) {
-      console.error('Erro ao buscar posts:', error)
+      console.error('❌ Erro ao buscar posts:', error)
       return res.status(500).json({ message: 'Erro interno do servidor' })
     }
   }
