@@ -1,6 +1,5 @@
 * {
   font-family: 'Montserrat', sans-serif;
-  overflow-x: hidden;
 }
 
 html, body {
@@ -20,4 +19,28 @@ body {
 /* Garantir que todos os elementos usem Montserrat */
 h1, h2, h3, h4, h5, h6, p, span, div, button, input, textarea, select {
   font-family: 'Montserrat', sans-serif;
+}
+
+/* Estilos específicos para páginas admin */
+.admin-layout {
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+.admin-content {
+  overflow: auto !important;
+  height: calc(100vh - 112px) !important;
+}
+
+/* CSS específico para tooltips do Ant Design */
+.ant-tooltip-inner {
+  background-color: #013F71 !important;
+  color: white !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 2px 8px rgba(1, 63, 113, 0.3) !important;
+}
+
+.ant-tooltip-arrow::before {
+  background-color: #013F71 !important;
 }

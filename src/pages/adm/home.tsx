@@ -1,135 +1,89 @@
 import {
-  Row,
-  Col,
-  Card,
-  Statistic,
-  Button,
   Typography,
-  Space
+  Image,
+  Card,
 } from 'antd'
-import {
-  FileTextOutlined,
-  FolderOutlined,
-  UserOutlined,
-  EyeOutlined,
-  PlusOutlined,
-} from '@ant-design/icons'
 import AdminLayout from '../../components/AdminLayout'
 import Head from 'next/head'
+import { useAuth } from '../../contexts/AuthContext'
 
 const { Title, Text } = Typography
 
 export default function AdminHome() {
+  const { user } = useAuth()
+
   return (
     <>
       <Head>
-        <title>Dashboard - Globaliza Contabil</title>
+        <title>Painel Admin - Globaliza Contabil</title>
       </Head>
       
       <AdminLayout>
-        <div>
-          <Title level={2} style={{ marginBottom: 24 }}>
-            Dashboard
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          minHeight: 'calc(100vh - 200px)',
+          textAlign: 'center',
+          padding: '40px 20px'
+        }}>
+          {/* Imagem centralizada */}
+          <Image
+            src="/empty.svg"
+            alt="Globaliza Contabil"
+            width={300}
+            height={300}
+            style={{ 
+              marginBottom: '32px',
+              borderRadius: '12px',
+              objectFit: 'cover',
+              opacity: 0.75,
+            }}
+            preview={false}
+          />
+          
+          {/* Título de boas-vindas */}
+          <Title level={1} style={{ 
+            marginBottom: '16px',
+            color: '#013F71',
+            fontSize: '2.5rem',
+            fontWeight: 'bold',
+            marginTop: '32px'
+          }}>
+            Bem vindo! {user?.name}
           </Title>
           
-          {/* Statistics Cards */}
-          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-            <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic
-                  title="Total de Posts"
-                  value={0}
-                  prefix={<FileTextOutlined />}
-                  valueStyle={{ color: '#3f8600' }}
-                />
-              </Card>
-            </Col>
+          {/* Texto explicativo */}
+          <Card 
+            style={{ 
+              maxWidth: '600px',
+              textAlign: 'center',
+              border: 'none',
+              boxShadow: 'none',
+              backgroundColor: 'transparent'
+            }}
+          >
+            <Text style={{ 
+              fontSize: '1.1rem',
+              lineHeight: '1.6',
+              color: '#666',
+              display: 'block'
+            }}>
+              Este é o painel admin do site da Globaliza Contabil. 
+              Aqui você vai poder gerenciar os principais pontos do site.
+            </Text>
             
-            <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic
-                  title="Categorias"
-                  value={0}
-                  prefix={<FolderOutlined />}
-                  valueStyle={{ color: '#1890ff' }}
-                />
-              </Card>
-            </Col>
-            
-            <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic
-                  title="Usuários"
-                  value={1}
-                  prefix={<UserOutlined />}
-                  valueStyle={{ color: '#722ed1' }}
-                />
-              </Card>
-            </Col>
-            
-            <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic
-                  title="Visualizações"
-                  value={0}
-                  prefix={<EyeOutlined />}
-                  valueStyle={{ color: '#cf1322' }}
-                />
-              </Card>
-            </Col>
-          </Row>
-
-          {/* Quick Actions and Recent Posts */}
-          <Row gutter={[16, 16]}>
-            <Col xs={24} lg={12}>
-              <Card title="Ações Rápidas" size="small">
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <Button 
-                    type="primary" 
-                    icon={<PlusOutlined />}
-                    size="large"
-                    block
-                  >
-                    Criar Novo Post
-                  </Button>
-                  
-                  <Button 
-                    icon={<FolderOutlined />}
-                    size="large"
-                    block
-                  >
-                    Adicionar Categoria
-                  </Button>
-                  
-                  <Button 
-                    icon={<UserOutlined />}
-                    size="large"
-                    block
-                  >
-                    Gerenciar Usuários
-                  </Button>
-                </Space>
-              </Card>
-            </Col>
-            
-            <Col xs={24} lg={12}>
-              <Card title="Posts Recentes" size="small">
-                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <Text type="secondary">
-                    Nenhum post criado ainda.
-                  </Text>
-                  <br />
-                  <Button 
-                    type="primary" 
-                    icon={<PlusOutlined />}
-                    style={{ marginTop: 16 }}
-                  >
-                    Criar Primeiro Post
-                  </Button>
-                </div>
-              </Card>
-            </Col>
-          </Row>
+            <div style={{ marginTop: '24px' }}>
+              <Text style={{ 
+                fontSize: '1rem',
+                color: '#999',
+                fontStyle: 'italic'
+              }}>
+                Selecione uma opção no menu ao lado para começar.
+              </Text>
+            </div>
+          </Card>
         </div>
       </AdminLayout>
     </>

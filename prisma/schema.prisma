@@ -24,24 +24,19 @@ model Users {
   posts         Posts[]   // Relação com posts
 }
 
-// Categorias do blog
+// Categorias simplificadas - apenas para badges
 model Categories {
-  id                 Int      @id @default(autoincrement())
-  name               String
-  description        String?
-  description_seo    String?
-  key_word_seo       String?
-  url                String?  @unique
-  favorite           Boolean  @default(false)
-  is_active          Boolean  @default(true)
-  is_main            Boolean  @default(false)
-  order              Int      @unique
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
-  posts              Posts[]  // Relação com posts
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  color       String   @default("#013F71") // Cor do badge
+  icon        String?  // Ícone da categoria (PNG, SVG, WebP)
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  posts       Posts[]  // Relação com posts
 }
 
-// Posts/Artigos do blog
+// Posts/Artigos do blog - otimizado
 model Posts {
   id               Int        @id @default(autoincrement())
   title            String
@@ -49,6 +44,7 @@ model Posts {
   excerpt          String?
   slug             String     @unique
   featured_image   String?
+  social_image     String?    // Imagem para redes sociais
   status           String     @default("draft") // draft, published, archived
   author_id        Int
   category_id      Int
@@ -57,6 +53,9 @@ model Posts {
   key_word_seo     String?
   view_count       Int        @default(0)
   is_featured      Boolean    @default(false)
+  is_pinned        Boolean    @default(false)  // Posts fixos
+  reading_time     Int?       // Tempo de leitura em minutos
+  tags             String?    // Tags separadas por vírgula
   published_at     DateTime?
   created_at       DateTime   @default(now())
   updated_at       DateTime   @updatedAt

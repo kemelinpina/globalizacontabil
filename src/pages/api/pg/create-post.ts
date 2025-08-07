@@ -18,7 +18,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       meta_description,
       key_word_seo,
       featured_image,
-      status = 'draft'
+      social_image,
+      status = 'draft',
+      is_featured = false,
+      is_pinned = false,
+      reading_time,
+      tags
     } = req.body
 
     // Validações básicas
@@ -55,6 +60,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ message: 'Autor não encontrado' })
     }
 
+    // Calcular tempo de leitura se não fornecido
+    const calculatedReadingTime = reading_time || Math.ceil(content.split(' ').length / 200)
+
     // Criar o post
     const post = await prisma.posts.create({
       data: {
@@ -68,7 +76,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         meta_description,
         key_word_seo,
         featured_image,
+        social_image,
         status,
+        is_featured,
+        is_pinned,
+        reading_time: calculatedReadingTime,
+        tags,
         published_at: status === 'published' ? new Date() : null
       },
       include: {
@@ -82,7 +95,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         category: {
           select: {
             id: true,
-            name: true
+            name: true,
+            color: true,
+            icon: true
           }
         }
       }

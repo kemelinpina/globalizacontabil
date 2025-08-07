@@ -8,8 +8,6 @@ import {
   theme,
 } from 'antd'
 import {
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
   DashboardOutlined,
   FileTextOutlined,
   FolderOutlined,
@@ -20,6 +18,8 @@ import {
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { useAuth } from '../contexts/AuthContext'
+import { CgMenuMotion } from 'react-icons/cg'
+import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons'
 
 const { Header, Sider, Content } = Layout
 
@@ -115,13 +115,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ height: '100vh', overflow: 'hidden' }} className="admin-layout">
       <Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
         style={{
           background: colorBgContainer,
+          overflow: 'hidden',
+          justifyContent: 'space-between',
         }}
       >
         <div style={{
@@ -129,7 +131,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          borderBottom: '1px solid #f0f0f0'
+          borderBottom: '1px solid #f0f0f0',
+          flexShrink: 0,
         }}>
           {collapsed ? (
             <Image
@@ -143,109 +146,119 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <Image
               src="/logo-globaliza.svg"
               alt="Globaliza Contabil"
-              width={180}
+              width={140}
               height={40}
               style={{ objectFit: 'contain' }}
             />
           )}
         </div>
 
-        <Menu
-          mode="inline"
-          selectedKeys={[router.pathname]}
-          items={menuItems}
-          onClick={handleMenuClick}
-          style={{
-            borderRight: 0,
-            marginTop: 16,
-          }}
-        />
-
-        {/* User Section */}
-        <div style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '16px',
-          borderTop: '1px solid #f0f0f0',
-          background: colorBgContainer,
+        <div style={{ 
+          flex: 1, 
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
         }}>
-          <Dropdown
-            menu={{
-              items: userMenuItems,
-              onClick: handleMenuClick,
+          <Menu
+            mode="inline"
+            selectedKeys={[router.pathname]}
+            items={menuItems}
+            onClick={handleMenuClick}
+            style={{
+              borderRight: 0,
+              marginTop: 16,
+              flex: 1,
+              overflow: 'auto',
             }}
-            placement="topRight"
-            trigger={['click']}
-          >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '6px',
-              transition: 'background-color 0.3s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f5f5f5'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent'
-            }}
+            inlineCollapsed={collapsed}
+          />
+
+          {/* User Section */}
+          <div style={{
+            padding: '16px',
+            borderTop: '1px solid #f0f0f0',
+            background: colorBgContainer,
+            flexShrink: 0,
+          }}>
+            <Dropdown
+              menu={{
+                items: userMenuItems,
+                onClick: handleMenuClick,
+              }}
+              placement="topRight"
+              trigger={['click']}
             >
-              <Avatar
-                size={collapsed ? 32 : 40}
-                src={user.picture}
-                icon={<UserOutlined />}
-                style={{ marginRight: collapsed ? 0 : 12 }}
-              />
-              {!collapsed && (
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    color: '#262626',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}>
-                    {user.name}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '6px',
+                transition: 'background-color 0.3s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f5f5f5'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+              }}
+              >
+                <Avatar
+                  size={collapsed ? 32 : 40}
+                  src={user.picture}
+                  icon={<UserOutlined />}
+                  style={{ marginRight: collapsed ? 0 : 12 }}
+                />
+                {!collapsed && (
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      color: '#262626',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}>
+                      {user.name}
+                    </div>
+                    <div style={{
+                      fontSize: '12px',
+                      color: '#8c8c8c',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}>
+                      {user.email}
+                    </div>
                   </div>
-                  <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}>
-                    {user.email}
-                  </div>
-                </div>
-              )}
-            </div>
-          </Dropdown>
+                )}
+              </div>
+            </Dropdown>
+          </div>
         </div>
       </Sider>
 
-      <Layout>
+      <Layout style={{ overflow: 'hidden' }}>
         <Header
           style={{
             padding: 0,
-            background: colorBgContainer,
-            borderBottom: '1px solid #f0f0f0',
+            background: 'transparent',
             display: 'flex',
             alignItems: 'center',
+            flexShrink: 0,
           }}
         >
           <Button
             type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            icon={collapsed ? <CgMenuMotion style={{ transform: 'scaleX(-1)' }} /> : <CgMenuMotion style={{ color: '#66CC33' }} />}
             onClick={() => setCollapsed(!collapsed)}
             style={{
               fontSize: '16px',
-              width: 64,
-              height: 64,
+              width: 40,
+              height: 40,
+              background: 'white',
+              borderRadius: '4px',
+              marginLeft: '16px',
             }}
           />
         </Header>
@@ -254,10 +267,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           style={{
             margin: '24px 16px',
             padding: 24,
-            minHeight: 280,
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
+            overflow: 'auto',
+            minHeight: 'calc(100vh - 112px)', // altura mínima em vez de fixa
           }}
+          className="admin-content"
         >
           {children}
         </Content>

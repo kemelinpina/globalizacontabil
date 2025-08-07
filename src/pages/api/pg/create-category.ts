@@ -9,10 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const {
       name,
-      description,
-      url,
-      favorite = false,
-      is_main = false,
+      color = "#013F71",
+      icon,
       is_active = true
     } = req.body
 
@@ -30,42 +28,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ message: 'Categoria com este nome já existe' })
     }
 
-    // Verificar se a URL já existe (se fornecida)
-    if (url) {
-      const existingUrl = await prisma.categories.findFirst({
-        where: { url }
+    // Validar formato da cor (hexadecimal)
+    const colorRegex = /^#[0-9A-F]{6}$/i
+    if (!colorRegex.test(color)) {
+      return res.status(400).json({ 
+        message: 'Cor deve estar no formato hexadecimal (ex: #013F71)' 
       })
+    }
 
-      if (existingUrl) {
-        return res.status(400).json({ message: 'URL já existe. Escolha outra.' })
-      }
-
-      // Validar formato da URL (apenas letras, números, hífens e underscores)
-      const urlRegex = /^[a-z0-9-]+$/
-      if (!urlRegex.test(url)) {
+    // Validar formato do ícone (se fornecido)
+    if (icon) {
+      const allowedExtensions = ['.png', '.svg', '.webp', '.jpg', '.jpeg']
+      const iconExtension = icon.toLowerCase().split('.').pop()
+      
+      if (!iconExtension || !allowedExtensions.includes(`.${iconExtension}`)) {
         return res.status(400).json({ 
-          message: 'URL deve conter apenas letras minúsculas, números, hífens e underscores' 
+          message: 'Ícone deve ser um arquivo PNG, SVG, WebP, JPG ou JPEG' 
         })
       }
     }
-
-    // Pegar a última ordem
-    const lastOrder = await prisma.categories.findFirst({
-      orderBy: { order: 'desc' }
-    })
-
-    const newOrder = lastOrder ? lastOrder.order + 1 : 1
 
     // Criar a categoria
     const category = await prisma.categories.create({
       data: {
         name,
-        description,
-        url,
-        favorite,
-        is_main,
-        is_active,
-        order: newOrder
+        color,
+        icon,
+        is_active
       }
     })
 
