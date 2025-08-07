@@ -15,10 +15,15 @@ export default function BannerWhatsApp() {
                             target='_blank'
                             aria-label='WhatsApp'
                             colorScheme='whatsapp'
-                            rightIcon={<FaWhatsapp />}
+                            rightIcon={<FaWhatsapp fontSize='23px' fontWeight='900' />}
                             size='lg'
                             borderRadius='4px'
                             fontWeight='bold'
+                            _hover={{
+                                backgroundColor: 'whatsapp.600',
+                                textDecoration: 'none',
+                                transform: 'translateY(-10px)'
+                            }}
                         >
                             Entrar para o grupo
                         </Button>

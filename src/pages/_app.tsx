@@ -1,6 +1,7 @@
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
+import Script from 'next/script'
 import '../styles/global.css'
 import { AuthProvider } from '../contexts/AuthContext'
 import { chakraTheme, cssVariables } from '../styles/colors'
@@ -29,6 +30,20 @@ export default function App({ Component, pageProps }: AppProps) {
         <link rel="apple-touch-icon" href="/icon.svg" />
         <style>{cssVariables}</style>
       </Head>
+
+      {/* Google Analytics */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-4R9T89H4Z4"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-4R9T89H4Z4');
+        `}
+      </Script>
 
       <AuthProvider>
         <ChakraProvider theme={theme}>

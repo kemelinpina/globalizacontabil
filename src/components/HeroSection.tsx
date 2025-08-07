@@ -53,7 +53,7 @@ export default function HeroSection () {
                 </Box>
                 <Box
                   as="span"
-                  color="accent.500"
+                  color="primary.500"
                   display="inline-block"
                   mr={2}
                 >
@@ -61,7 +61,7 @@ export default function HeroSection () {
                 </Box>
                 <Box
                   as="span"
-                  color="primary.500"
+                  color="accent.500"
                   display="inline-block"
                   mr={2}
                 >
@@ -69,7 +69,7 @@ export default function HeroSection () {
                 </Box>
                 <Box
                   as="span"
-                  color="primary.500"
+                  color="accent.500"
                   display="inline-block"
                   mr={2}
                 >
