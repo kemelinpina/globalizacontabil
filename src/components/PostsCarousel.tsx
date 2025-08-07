@@ -134,6 +134,7 @@ export default function PostsCarousel({
               fontSize='2xl'
               borderRadius='4px'
               onClick={() => { }}
+              _hover={{ transform: 'translateY(-10px)' }}
             />
           </Box>
         </Box>

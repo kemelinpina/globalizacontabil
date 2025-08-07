@@ -2,9 +2,18 @@
   font-family: 'Montserrat', sans-serif;
 }
 
-body {
-  background-color: #FAFAFA;
+html, body {
+  background-color: #fafafa !important;
   font-family: 'Montserrat', sans-serif;
+}
+
+body {
+  background-color: #fafafa !important;
+  font-family: 'Montserrat', sans-serif;
+}
+
+#__next {
+  background-color: #fafafa;
 }
 
 /* Garantir que todos os elementos usem Montserrat */

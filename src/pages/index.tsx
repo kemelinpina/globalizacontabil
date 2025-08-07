@@ -2,9 +2,12 @@ import React from 'react'
 import { Box, Heading, Text } from '@chakra-ui/react'
 import Head from 'next/head'
 import HeroSection from '@/components/HeroSection'
+import PostDestaque from '../components/PostDestaque'
 import PostsCarousel from '../components/PostsCarousel'
 import BannerWhatsApp from '../components/BannerWhatsApp'
 import Footer from '../components/Footer'
+import Header from '../components/Header'
+import SectionSobre from '@/components/SectionSobre'
 
 export default function Home() {
   // Dados mock para testar o PostsCarousel
@@ -63,6 +66,9 @@ export default function Home() {
         <link rel="apple-touch-icon" href="/icon.svg" />
       </Head>
 
+      {/* Header */}
+      <Header />
+
       {/* Hero Section */}
       <HeroSection />
 
@@ -72,6 +78,12 @@ export default function Home() {
         subtitle="Conteúdo exclusivo para sua carreira contábil internacional"
         posts={mockPosts}
       />
+
+      {/* Post Destaque */}
+      <PostDestaque />
+
+      {/* Section Sobre */}
+      <SectionSobre />
 
       {/* WhatsApp Banner */}
       <Box py={8}>
