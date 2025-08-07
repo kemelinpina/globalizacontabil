@@ -1,45 +1,57 @@
-import React, { useState, useEffect } from 'react'
-import { Box } from '@chakra-ui/react'
+import React from 'react'
+import { Box, Heading, Text } from '@chakra-ui/react'
 import Head from 'next/head'
 import HeroSection from '@/components/HeroSection'
 import PostsCarousel from '../components/PostsCarousel'
 import BannerWhatsApp from '../components/BannerWhatsApp'
 import Footer from '../components/Footer'
 
-interface Post {
-  id: number
-  title: string
-  excerpt: string
-  featured_image?: string
-  slug: string
-  published_at: string
-  author: {
-    name: string
-  }
-  category: {
-    name: string
-  }
-}
-
 export default function Home() {
-  const [posts, setPosts] = useState<Post[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await fetch('/api/pg/posts?status=published&limit=6')
-        const data = await response.json()
-        setPosts(data.posts || [])
-      } catch (error) {
-        console.error('Erro ao buscar posts:', error)
-      } finally {
-        setLoading(false)
+  // Dados mock para testar o PostsCarousel
+  const mockPosts = [
+    {
+      id: 1,
+      title: "Como se preparar para a certificação CPA",
+      excerpt: "Dicas essenciais para conquistar sua certificação CPA e avançar na carreira contábil internacional.",
+      featured_image: "/default.png",
+      slug: "como-se-preparar-cpa",
+      published_at: "2024-01-15T10:00:00Z",
+      author: {
+        name: "Equipe Globaliza"
+      },
+      category: {
+        name: "Certificações"
+      }
+    },
+    {
+      id: 2,
+      title: "Diferenças entre ACCA e CPA",
+      excerpt: "Entenda as principais diferenças entre as certificações ACCA e CPA para escolher a melhor para sua carreira.",
+      featured_image: "/default.png",
+      slug: "diferencas-acca-cpa",
+      published_at: "2024-01-10T10:00:00Z",
+      author: {
+        name: "Equipe Globaliza"
+      },
+      category: {
+        name: "Certificações"
+      }
+    },
+    {
+      id: 3,
+      title: "Mercado de trabalho internacional",
+      excerpt: "Descubra as oportunidades de trabalho no exterior para contadores certificados.",
+      featured_image: "/default.png",
+      slug: "mercado-trabalho-internacional",
+      published_at: "2024-01-05T10:00:00Z",
+      author: {
+        name: "Equipe Globaliza"
+      },
+      category: {
+        name: "Carreira"
       }
     }
-
-    fetchPosts()
-  }, [])
+  ]
 
   return (
     <>
@@ -58,7 +70,7 @@ export default function Home() {
       <PostsCarousel 
         title="Posts em Destaque"
         subtitle="Conteúdo exclusivo para sua carreira contábil internacional"
-        posts={posts}
+        posts={mockPosts}
       />
 
       {/* WhatsApp Banner */}

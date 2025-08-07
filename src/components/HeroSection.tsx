@@ -98,8 +98,9 @@ export default function HeroSection () {
                 fontSize="lg"
                 fontWeight="semibold"
                 _hover={{
-                  transform: 'translateY(-2px)',
+                  transform: 'translateY(-10px)',
                   shadow: 'lg',
+                  textDecoration: 'none',
                 }}
                 as={Link}
                 href="/posts"

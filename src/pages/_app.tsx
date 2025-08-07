@@ -1,13 +1,16 @@
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
-import 'antd/dist/reset.css'
+import '../styles/global.css'
 import { AuthProvider } from '../contexts/AuthContext'
 import { chakraTheme, cssVariables } from '../styles/colors'
-import AntdConfigProvider from '../components/AntdConfigProvider'
 
-// Estender o tema do Chakra UI com nossas cores
+// Estender o tema do Chakra UI com nossas cores e fonte
 const theme = extendTheme({
+  fonts: {
+    heading: 'Montserrat, sans-serif',
+    body: 'Montserrat, sans-serif',
+  },
   colors: chakraTheme.colors,
   config: {
     initialColorMode: 'light',
@@ -24,15 +27,16 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/icon.svg" />
         <link rel="apple-touch-icon" href="/icon.svg" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
         <style>{cssVariables}</style>
       </Head>
 
       <AuthProvider>
-        <AntdConfigProvider>
-          <ChakraProvider theme={theme}>
-            <Component {...pageProps} />
-          </ChakraProvider>
-        </AntdConfigProvider>
+        <ChakraProvider theme={theme}>
+          <Component {...pageProps} />
+        </ChakraProvider>
       </AuthProvider>
     </>
   )
