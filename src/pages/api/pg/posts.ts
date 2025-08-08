@@ -5,6 +5,7 @@ interface WhereClause {
   status?: string
   category_id?: number
   slug?: string
+  is_featured?: boolean
   OR?: Array<{
     title?: { contains: string }
     content?: { contains: string }
@@ -21,7 +22,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         status,
         category_id,
         search,
-        slug
+        slug,
+        is_featured,
+        featured_only
       } = req.query
 
       const pageNumber = parseInt(page as string)
@@ -37,6 +40,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       if (category_id) {
         where.category_id = parseInt(category_id as string)
+      }
+      
+      if (is_featured !== undefined) {
+        where.is_featured = is_featured === 'true'
+      }
+      
+      // Se featured_only for true, buscar apenas posts em destaque
+      if (featured_only === 'true') {
+        where.is_featured = true
       }
       
       if (search) {
@@ -71,9 +83,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
           }
         },
-        orderBy: {
-          published_at: 'desc'
-        },
+        orderBy: [
+          { is_featured: 'desc' },
+          { published_at: 'desc' }
+        ],
         skip,
         take: limitNumber
       })

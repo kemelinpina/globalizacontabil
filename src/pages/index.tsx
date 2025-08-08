@@ -12,51 +12,6 @@ import SectionSobre from '@/components/SectionSobre'
 
 export default function Home() {
   const { isOpen, onClose } = useDisclosure()
-  // Dados mock para testar o PostsCarousel
-  const mockPosts = [
-    {
-      id: 1,
-      title: "Como se preparar para a certificação CPA",
-      excerpt: "Dicas essenciais para conquistar sua certificação CPA e avançar na carreira contábil internacional.",
-      featured_image: "/default.png",
-      slug: "como-se-preparar-cpa",
-      published_at: "2024-01-15T10:00:00Z",
-      author: {
-        name: "Equipe Globaliza"
-      },
-      category: {
-        name: "Certificações"
-      }
-    },
-    {
-      id: 2,
-      title: "Diferenças entre ACCA e CPA",
-      excerpt: "Entenda as principais diferenças entre as certificações ACCA e CPA para escolher a melhor para sua carreira.",
-      featured_image: "/default.png",
-      slug: "diferencas-acca-cpa",
-      published_at: "2024-01-10T10:00:00Z",
-      author: {
-        name: "Equipe Globaliza"
-      },
-      category: {
-        name: "Certificações"
-      }
-    },
-    {
-      id: 3,
-      title: "Mercado de trabalho internacional",
-      excerpt: "Descubra as oportunidades de trabalho no exterior para contadores certificados.",
-      featured_image: "/default.png",
-      slug: "mercado-trabalho-internacional",
-      published_at: "2024-01-05T10:00:00Z",
-      author: {
-        name: "Equipe Globaliza"
-      },
-      category: {
-        name: "Carreira"
-      }
-    }
-  ]
 
   return (
     <>
@@ -76,9 +31,8 @@ export default function Home() {
 
       {/* Posts Carousel */}
       <PostsCarousel 
-        title="Posts em Destaque"
+        title="A jornada para uma certificação internacional parece um labirinto?"
         subtitle="Conteúdo exclusivo para sua carreira contábil internacional"
-        posts={mockPosts}
       />
 
       {/* Post Destaque */}

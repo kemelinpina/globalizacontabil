@@ -31,30 +31,70 @@ interface Post {
 interface PostsCarouselProps {
   title?: string
   subtitle?: string
-  posts: Post[]
+  posts?: Post[]
 }
 
 export default function PostsCarousel({
-  title = "Posts em Destaque",
+  title = "A jornada para uma certificação internacional parece um labirinto?",
   subtitle = "Conteúdo exclusivo para sua carreira contábil",
-  posts
+  posts: propPosts
 }: PostsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [posts, setPosts] = useState<Post[]>([])
+  const [featuredPost, setFeaturedPost] = useState<Post | null>(null)
 
   useEffect(() => {
-    if (posts.length > 0) {
-      setIsLoading(false)
+    const fetchPosts = async () => {
+      try {
+        setIsLoading(true)
+        
+        // Primeiro, tentar buscar posts em destaque
+        let response = await fetch('/api/pg/posts?status=published&featured_only=true&limit=10')
+        let data = await response.json()
+        
+        let publishedPosts = data.posts || []
+        
+        // Se não houver posts em destaque, buscar posts publicados normais
+        if (publishedPosts.length === 0) {
+          response = await fetch('/api/pg/posts?status=published&limit=10')
+          data = await response.json()
+          publishedPosts = data.posts || []
+        }
+        
+        if (publishedPosts.length > 0) {
+          setPosts(publishedPosts)
+          
+          // Definir o primeiro post como destaque
+          setFeaturedPost(publishedPosts[0])
+        }
+      } catch (error) {
+        console.error('Erro ao buscar posts:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
-  }, [posts])
+
+    // Se posts foram passados como prop, usar eles
+    if (propPosts && propPosts.length > 0) {
+      setPosts(propPosts)
+      setFeaturedPost(propPosts[0])
+      setIsLoading(false)
+    } else {
+      // Caso contrário, buscar do banco
+      fetchPosts()
+    }
+  }, [propPosts])
 
   const nextSlide = () => {
+    if (posts.length <= 3) return
     setCurrentIndex((prevIndex) =>
-      prevIndex === posts.length - 3 ? 0 : prevIndex + 1
+      prevIndex >= posts.length - 3 ? 0 : prevIndex + 1
     )
   }
 
   const prevSlide = () => {
+    if (posts.length <= 3) return
     setCurrentIndex((prevIndex) =>
       prevIndex === 0 ? posts.length - 3 : prevIndex - 1
     )
@@ -83,6 +123,9 @@ export default function PostsCarousel({
     return null
   }
 
+  // Pegar os posts para o carrossel (excluindo o primeiro que é o destaque)
+  const carouselPosts = posts.slice(1).slice(currentIndex, currentIndex + 3)
+
   return (
     <Box mt={'-60px'} bg="#fafafa">
       <Container maxW="container.xl" display="flex" gap={4} alignItems='flex-end'>
@@ -101,10 +144,10 @@ export default function PostsCarousel({
           <Box w='100%' borderRadius='4px' h="100%" display="flex" flexDirection="column" justifyContent="space-between">
             <Box p={4}>
               <Heading as='h2' fontSize='2xl' fontWeight='600' textAlign='left' color='red.500' mb={2}>
-                O que é a Certificação CPA?
+                {featuredPost?.title || "Em breve..."}
               </Heading>
               <Text color='primary.500'>
-                Você sonha com uma carreira global em contabilidade, mas a sigla CPA parece um mistério? Muitos profissionais brasileiros ouvem falar dessa certificação, mas poucos realmente entendem seu poder e o caminho para conquistá-la.
+                {featuredPost?.excerpt || "Novo post sendo preparado para você."}
               </Text>
               <Flex gap={3} mt={2}>
                 <Badge
@@ -113,14 +156,19 @@ export default function PostsCarousel({
                   color='red.500'
                   fontWeight='600'
                   fontStyle='italic'
-                >Certificações</Badge>
+                >
+                  {featuredPost?.category?.name || " "}
+                </Badge>
                 <Badge
                   borderRadius='4px'
                   backgroundColor={'#FEDDDD'}
                   color='red.500'
                   fontWeight='600'
                   fontStyle='italic'
-                ><Icon as={FiCalendar} mr={1} />Teste</Badge>
+                >
+                  <Icon as={FiCalendar} mr={1} />
+                  {featuredPost?.published_at ? formatDate(featuredPost.published_at) : " "}
+                </Badge>
               </Flex>
             </Box>
 
@@ -133,18 +181,22 @@ export default function PostsCarousel({
               size='lg'
               fontSize='2xl'
               borderRadius='4px'
-              onClick={() => { }}
+              onClick={() => {
+                if (featuredPost) {
+                  window.location.href = `/post/${featuredPost.slug}`
+                }
+              }}
               _hover={{ transform: 'translateY(-10px)' }}
             />
           </Box>
         </Box>
         <Box w='75%' h='100%'>
-          <Flex w='100%'>
-            <Heading as='h2' fontSize='3xl' fontWeight='bold' textAlign='left' color='primary.500' mb={2}>
-              A jornada para uma certificação internacional parece um labirinto?
+          <Flex w='100%' justifyContent='space-between' alignItems='center' gap={4}>
+            <Heading as='h2' fontSize='3xl' fontWeight='bold' textAlign='left' color='primary.500' mb={2} flex={1}>
+              {title}
             </Heading>
             {/* Setas de navegação */}
-            <Flex w='25%' id='setas-posts' gap={2} justifyContent='flex-end' alignItems='center'>
+            <Flex gap={2} alignItems='center'>
               <IconButton
                 aria-label='Voltar'
                 icon={<FaCaretLeft />}
@@ -152,6 +204,9 @@ export default function PostsCarousel({
                 color='#0876D0'
                 backgroundColor='white'
                 fontSize='2xl'
+                onClick={prevSlide}
+                isDisabled={posts.length <= 3}
+                _hover={{ backgroundColor: '#f0f0f0' }}
               >
               </IconButton>
               <IconButton
@@ -161,39 +216,48 @@ export default function PostsCarousel({
                 color='#0876D0'
                 backgroundColor='white'
                 fontSize='2xl'
+                onClick={nextSlide}
+                isDisabled={posts.length <= 3}
+                _hover={{ backgroundColor: '#f0f0f0' }}
               >
               </IconButton>
             </Flex>
           </Flex>
           <Flex w='100%' mt={4} gap={4}>
             {/* Outros posts */}
-            <Box p={4} borderRadius='4px' bg='white'>
-              <Heading as='h3' fontSize='18px' fontWeight='bold' textAlign='left' color='primary.500' mb={2}>
-                Título do Post
-              </Heading>
-              <Text mb={4} color='primary.500'>Inseguro sobre como validar seu diploma brasileiro no exterior?</Text>
-              <Link href='/post/1' color='red.500' fontWeight='bold' fontSize='12px' mt={4} _hover={{ textDecoration: 'none' }}>Continue lendo</Link>
-
-            </Box>
-            <Box p={4} borderRadius='4px' bg='white'>
-              <Heading as='h3' fontSize='18px' fontWeight='bold' textAlign='left' color='primary.500' mb={2}>
-                Título do Post
-              </Heading>
-              <Text mb={4} color='primary.500'>Inseguro sobre como validar seu diploma brasileiro no exterior?</Text>
-              <Link href='/post/1' color='red.500' fontWeight='bold' fontSize='12px' mt={4} _hover={{ textDecoration: 'none' }}>Continue lendo</Link>
-
-            </Box>
-            <Box p={4} borderRadius='4px' bg='white'>
-              <Heading as='h3' fontSize='18px' fontWeight='bold' textAlign='left' color='primary.500' mb={2}>
-                Título do Post
-              </Heading>
-              <Text mb={4} color='primary.500'>Inseguro sobre como validar seu diploma brasileiro no exterior?</Text>
-              <Link href='/post/1' color='red.500' fontWeight='bold' fontSize='12px' mt={4} _hover={{ textDecoration: 'none' }}>Continue lendo</Link>
-
-            </Box>
+            {carouselPosts.map((post, index) => (
+              <Box key={post.id} p={4} borderRadius='4px' bg='white' flex={1}>
+                <Heading as='h3' fontSize='18px' fontWeight='bold' textAlign='left' color='primary.500' mb={2}>
+                  {post.title}
+                </Heading>
+                <Text mb={4} color='primary.500' noOfLines={3}>
+                  {post.excerpt}
+                </Text>
+                <Link 
+                  href={`/post/${post.slug}`} 
+                  color='red.500' 
+                  fontWeight='bold' 
+                  fontSize='12px' 
+                  mt={4} 
+                  _hover={{ textDecoration: 'none' }}
+                >
+                  Continue lendo
+                </Link>
+              </Box>
+            ))}
+            
+            {/* Preencher espaços vazios se não houver posts suficientes */}
+            {carouselPosts.length < 3 && Array.from({ length: 3 - carouselPosts.length }).map((_, index) => (
+              <Box key={`empty-${index}`} p={4} borderRadius='4px' bg='white' flex={1} opacity={0.5}>
+                <Heading as='h3' fontSize='18px' fontWeight='bold' textAlign='left' color='primary.500' mb={2}>
+                  Em breve...
+                </Heading>
+                <Text mb={4} color='primary.500'>
+                  Novos posts estão sendo preparados para você.
+                </Text>
+              </Box>
+            ))}
           </Flex>
-
-
         </Box>
       </Container>
     </Box>
