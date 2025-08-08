@@ -12,6 +12,14 @@ import {
   Text,
   Link,
   Flex,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure,
 } from '@chakra-ui/react'
 import { useState } from 'react'
 import { useRouter } from 'next/router'
@@ -23,9 +31,12 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotLoading, setForgotLoading] = useState(false)
   const router = useRouter()
   const toast = useToast()
   const { login } = useAuth()
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,6 +75,68 @@ export default function LoginPage() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleForgotPassword = async () => {
+    if (!forgotEmail) {
+      toast({
+        title: 'Email obrigatório',
+        description: 'Por favor, informe seu email',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      })
+      return
+    }
+
+    setForgotLoading(true)
+
+    try {
+      const response = await fetch('/api/pg/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: forgotEmail }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast({
+          title: 'Email enviado!',
+          description: 'Caso o e-mail esteja cadastrado no sistema, logo você receberá um email para cadastrar o novo acesso.',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        })
+        onClose()
+        setForgotEmail('')
+      } else {
+        toast({
+          title: 'Email enviado!',
+          description: 'Caso o e-mail esteja cadastrado no sistema, logo você receberá um email para cadastrar o novo acesso.',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        })
+        onClose()
+        setForgotEmail('')
+      }
+    } catch (error) {
+      console.error('Erro ao enviar email de recuperação:', error)
+      toast({
+        title: 'Email enviado!',
+        description: 'Caso o e-mail esteja cadastrado no sistema, logo você receberá um email para cadastrar o novo acesso.',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      })
+      onClose()
+      setForgotEmail('')
+    } finally {
+      setForgotLoading(false)
     }
   }
 
@@ -145,12 +218,12 @@ export default function LoginPage() {
 
                     <Flex w='100%' gap={4}>
                       <Button
-                        type="submit"
+                        type="button"
                         colorScheme="primary"
                         variant='ghost'
                         size="lg"
                         width="full"
-                        isLoading={loading}
+                        onClick={onOpen}
                         fontSize="md"
                         fontWeight='normal'
                         px={0}
@@ -184,6 +257,45 @@ export default function LoginPage() {
           <Text mt={4} textAlign='center'>Desenvolvido por <Link href='https://3hub.co' target='_blank' color={'accent.600'} fontWeight='bold' _hover={{ color: 'accent.800', textDecoration: 'none' }}>3Hub</Link></Text>
         </Container>
       </Box>
+
+      {/* Modal de Recuperação de Senha */}
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Recuperar Senha</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={4}>
+              <Text>
+                Digite seu email para receber um link de recuperação de senha.
+              </Text>
+              <FormControl isRequired>
+                <FormLabel>Email</FormLabel>
+                <Input
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  size="lg"
+                />
+              </FormControl>
+            </VStack>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button
+              colorScheme="primary"
+              onClick={handleForgotPassword}
+              isLoading={forgotLoading}
+            >
+              Enviar
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   )
 } 

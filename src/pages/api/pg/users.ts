@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
 import bcrypt from 'bcryptjs'
+import emailService from '../../../utils/emailService'
 
 interface WhereClause {
   is_active?: boolean
@@ -105,7 +106,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Criptografar senha
       const hashedPassword = await bcrypt.hash(password, 10)
 
-      // Criar usuário
+      // Criar usuário (retornando sem o campo de senha)
       const newUser = await prisma.users.create({
         data: {
           name: name.trim(),
@@ -113,14 +114,54 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           password: hashedPassword,
           super_adm: super_adm || false,
           is_active: is_active !== undefined ? is_active : true
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          super_adm: true,
+          picture: true,
+          is_active: true,
+          created_at: true,
+          updated_at: true
         }
       })
 
-      // Retornar usuário sem a senha
-      const { password: _, ...userWithoutPassword } = newUser
+      // Usuário já retornado sem o campo de senha via select acima
+
+      // Enviar email de boas-vindas para o novo usuário
+      try {
+        await emailService.sendWelcomeEmail(newUser.email, newUser.name)
+        console.log('Email de boas-vindas enviado para:', newUser.email)
+      } catch (emailError) {
+        console.error('Erro ao enviar email de boas-vindas:', emailError)
+        // Não falhar a criação do usuário se o email falhar
+      }
+
+      // Buscar administradores e enviar notificação
+      try {
+        const admins = await prisma.users.findMany({
+          where: {
+            super_adm: true,
+            is_active: true
+          },
+          select: {
+            email: true
+          }
+        })
+
+        if (admins.length > 0) {
+          const adminEmails = admins.map(admin => admin.email)
+          await emailService.sendAdminNotification(adminEmails, newUser.name, newUser.email)
+          console.log('Notificação enviada para administradores:', adminEmails)
+        }
+      } catch (adminEmailError) {
+        console.error('Erro ao enviar notificação para administradores:', adminEmailError)
+        // Não falhar a criação do usuário se a notificação falhar
+      }
 
       return res.status(201).json({
-        user: userWithoutPassword,
+        user: newUser,
         message: 'Usuário criado com sucesso'
       })
 

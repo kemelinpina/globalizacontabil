@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import bcrypt from 'bcryptjs'
 import { prisma } from '../../../lib/prisma'
+import emailService from '../../../utils/emailService'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -48,6 +49,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Retornar dados do usuário (sem a senha)
     const { password: _, ...userWithoutPassword } = user
+
+    // Enviar email de boas-vindas
+    try {
+      await emailService.sendWelcomeEmail(user.email, user.name)
+    } catch (emailError) {
+      console.error('Erro ao enviar email de boas-vindas:', emailError)
+      // Não falhar a criação do usuário se o email falhar
+    }
 
     return res.status(201).json({
       message: 'Usuário criado com sucesso',
