@@ -37,7 +37,7 @@ export default function DynamicMenu({ location, className = '' }: DynamicMenuPro
   const fetchMenu = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/pg/menus?location=${location}`)
+      const response = await fetch(`/api/pg/menus?location=${location}&include_items=true`)
       
       if (response.ok) {
         const data = await response.json()

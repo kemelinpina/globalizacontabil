@@ -1,21 +1,22 @@
 import { Box, Container, Flex, IconButton, Link } from '@chakra-ui/react'
 import Image from 'next/image'
+import NextLink from 'next/link'
+import DynamicMenu from './DynamicMenu'
 import { FaInstagram, FaLinkedinIn, FaWhatsapp } from 'react-icons/fa'
 
 export default function Header() {
+
   return (
     <>
       <Box bg='transparent'>
         <Container maxW="container.xl">
           <Flex w='100%' justifyContent='space-between' alignItems='center' py={4}>
-            <Box>
+            <Box as={NextLink} href="/" _hover={{ textDecoration: 'none' }}>
               <Image src="/logo-globaliza.svg" alt="Globaliza Contabil" width={160} height={100} />
             </Box>
-            <Flex gap={4} justifyContent='center' alignItems='center'>
-              <Link href="/">Home</Link>
-              <Link href="/">Sobre</Link>
-              <Link href="/">Contato</Link>
-            </Flex>
+            <Box>
+              <DynamicMenu location="header" />
+            </Box>
             <Flex gap={4} justifyContent='flex-end' alignItems='center'>
               <IconButton
                 as={Link}
