@@ -225,6 +225,8 @@ export default function PostPage() {
                                 <Image
                                     src={post.featured_image}
                                     alt={post.title}
+                                    width={800}
+                                    height={400}
                                     style={{
                                         width: '100%',
                                         height: 'auto',
@@ -232,7 +234,7 @@ export default function PostPage() {
                                         maxHeight: '400px',
                                         objectFit: 'cover'
                                     }}
-                                ></Image>s
+                                />
                             </Box>
                         )}
 

@@ -10,17 +10,16 @@ import {
   Divider,
   Switch,
   DatePicker,
-  Upload,
 } from 'antd'
 import {
   SaveOutlined,
   EyeOutlined,
-  UploadOutlined,
   PlusOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import AdminLayout from '../../../components/AdminLayout'
 import PostEditor from '../../../components/PostEditor'
+import ImageUpload from '../../../components/ImageUpload'
 import { useAuth } from '../../../contexts/AuthContext'
 import Head from 'next/head'
 
@@ -36,7 +35,7 @@ interface Category {
 interface FormValues {
   title: string
   slug: string
-  category_id: string
+  category_id: number
   status: string
   excerpt?: string
   meta_title?: string
@@ -103,7 +102,7 @@ export default function CreatePost() {
         title: values.title,
         content: content,
         slug: values.slug,
-        category_id: parseInt(values.category_id),
+        category_id: values.category_id,
         author_id: user.id,
         excerpt: values.excerpt || '',
         status: values.status || 'draft',
@@ -292,16 +291,23 @@ export default function CreatePost() {
                   name="featured_image"
                   label="Imagem Destacada"
                 >
-                  <Upload
-                    listType="picture-card"
-                    maxCount={1}
-                    beforeUpload={() => false}
-                  >
-                    <div>
-                      <PlusOutlined />
-                      <div style={{ marginTop: 8 }}>Upload</div>
-                    </div>
-                  </Upload>
+                  <ImageUpload
+                    placeholder="Clique para fazer upload da imagem destacada"
+                    onUploadSuccess={(url) => form.setFieldsValue({ featured_image: url })}
+                    onUploadError={(error) => message.error(error)}
+                  />
+                </Form.Item>
+
+                {/* Imagem Social */}
+                <Form.Item
+                  name="social_image"
+                  label="Imagem para Redes Sociais"
+                >
+                  <ImageUpload
+                    placeholder="Clique para fazer upload da imagem para redes sociais"
+                    onUploadSuccess={(url) => form.setFieldsValue({ social_image: url })}
+                    onUploadError={(error) => message.error(error)}
+                  />
                 </Form.Item>
 
                 <Divider />

@@ -10,20 +10,18 @@ import {
   Divider,
   Switch,
   DatePicker,
-  Upload,
   Spin,
 } from 'antd'
 import dayjs from 'dayjs'
 import {
   SaveOutlined,
   EyeOutlined,
-  UploadOutlined,
-  PlusOutlined,
   ArrowLeftOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import AdminLayout from '../../../../components/AdminLayout'
 import PostEditor from '../../../../components/PostEditor'
+import ImageUpload from '../../../../components/ImageUpload'
 import { useAuth } from '../../../../contexts/AuthContext'
 import Head from 'next/head'
 
@@ -68,7 +66,7 @@ interface Post {
 interface FormValues {
   title: string
   slug: string
-  category_id: string
+  category_id: number
   status: string
   excerpt?: string
   meta_title?: string
@@ -133,7 +131,7 @@ export default function EditPost() {
                     form.setFieldsValue({
                       title: data.post.title,
                       slug: data.post.slug,
-                      category_id: data.post.category_id.toString(),
+                      category_id: data.post.category_id,
                       status: data.post.status,
                       excerpt: data.post.excerpt,
                       meta_title: data.post.meta_title,
@@ -190,7 +188,7 @@ export default function EditPost() {
         title: values.title,
         content: content,
         slug: values.slug,
-        category_id: parseInt(values.category_id),
+        category_id: values.category_id,
         author_id: user.id,
         excerpt: values.excerpt || '',
         status: values.status || 'draft',
@@ -417,16 +415,25 @@ export default function EditPost() {
                   name="featured_image"
                   label="Imagem Destacada"
                 >
-                  <Upload
-                    listType="picture-card"
-                    maxCount={1}
-                    beforeUpload={() => false}
-                  >
-                    <div>
-                      <PlusOutlined />
-                      <div style={{ marginTop: 8 }}>Upload</div>
-                    </div>
-                  </Upload>
+                  <ImageUpload
+                    value={post?.featured_image || ''}
+                    placeholder="Clique para fazer upload da imagem destacada"
+                    onUploadSuccess={(url) => form.setFieldsValue({ featured_image: url })}
+                    onUploadError={(error) => message.error(error)}
+                  />
+                </Form.Item>
+
+                {/* Imagem Social */}
+                <Form.Item
+                  name="social_image"
+                  label="Imagem para Redes Sociais"
+                >
+                  <ImageUpload
+                    value={post?.social_image || ''}
+                    placeholder="Clique para fazer upload da imagem para redes sociais"
+                    onUploadSuccess={(url) => form.setFieldsValue({ social_image: url })}
+                    onUploadError={(error) => message.error(error)}
+                  />
                 </Form.Item>
 
                 <Divider />
