@@ -25,6 +25,10 @@ export interface EmailData {
   htmlContent: string
   senderName?: string
   senderEmail?: string
+  cc?: string[]
+  bcc?: string[]
+  replyToEmail?: string
+  replyToName?: string
 }
 
 export class EmailService {
@@ -54,6 +58,37 @@ export class EmailService {
       sendSmtpEmail.sender = {
         name: emailData.senderName || 'Andre Paravela',
         email: emailData.senderEmail || 'marketing@globalizacontabil.com.br'
+      }
+
+      // Tipos adicionais do SDK não estão presentes na definição; uso narrow cast controlado
+      const smtpAny: {
+        cc?: Array<{ email: string; name?: string }>
+        bcc?: Array<{ email: string; name?: string }>
+        replyTo?: { email: string; name?: string }
+      } = sendSmtpEmail as unknown as {
+        cc?: Array<{ email: string; name?: string }>
+        bcc?: Array<{ email: string; name?: string }>
+        replyTo?: { email: string; name?: string }
+      }
+      if (emailData.cc && emailData.cc.length > 0) {
+        smtpAny.cc = emailData.cc.map(ccEmail => ({
+          email: ccEmail,
+          name: ccEmail.split('@')[0]
+        }))
+      }
+
+      if (emailData.bcc && emailData.bcc.length > 0) {
+        smtpAny.bcc = emailData.bcc.map(bccEmail => ({
+          email: bccEmail,
+          name: bccEmail.split('@')[0]
+        }))
+      }
+
+      if (emailData.replyToEmail) {
+        smtpAny.replyTo = {
+          email: emailData.replyToEmail,
+          name: emailData.replyToName || emailData.replyToEmail.split('@')[0]
+        }
       }
 
       console.log('Enviando email para:', emailData.to)

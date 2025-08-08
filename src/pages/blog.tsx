@@ -20,9 +20,11 @@ import {
     CardBody,
     CardHeader,
 } from '@chakra-ui/react'
+import { useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody } from '@chakra-ui/react'
 import { FiSearch, FiCalendar, FiUser, FiEye, FiClock, FiMail } from 'react-icons/fi'
 import Head from 'next/head'
 import Header from '@/components/Header'
+import Contact from '@/components/Contact'
 import Link from 'next/link'
 import ImageNext from 'next/image'
 
@@ -61,6 +63,7 @@ export default function Blog() {
     const [selectedCategory, setSelectedCategory] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
+    const { isOpen, onOpen, onClose } = useDisclosure()
 
     const fetchPosts = useCallback(async () => {
         try {
@@ -449,7 +452,7 @@ export default function Blog() {
                                                 size='md'
                                                 borderRadius='4px'
                                                 rightIcon={<Icon as={FiMail} />}
-                                                onClick={() => window.open('mailto:contato@globalizacontabil.com.br', '_blank')}
+                                                onClick={onOpen}
                                                 _hover={{
                                                     backgroundColor: 'gray.100',
                                                     transform: 'translateY(-2px)'
@@ -465,6 +468,18 @@ export default function Blog() {
                     </Flex>
                 </Container>
             </Box>
+
+            {/* Modal de Contato */}
+            <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Fale Conosco</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody pb={6}>
+                        <Contact isCompact onSuccess={onClose} />
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
         </>
     )
 }

@@ -145,4 +145,85 @@ export const emailTemplates = {
     </body>
     </html>
   `
+  ,
+  // Confirmação de contato
+  contactConfirmation: (userName: string) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Recebemos sua mensagem - Globaliza Contabil</title>
+    </head>
+    <body style="font-family: Montserrat, sans-serif; margin: 0; padding: 0; background: linear-gradient(313deg, #013f71, #132433)!important; ">
+      <div style="max-width: 600px; margin: 0 auto; background-color: #19354f; padding: 20px; border-radius: 4px!important; margin-bottom: 30px;">
+        <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #013F71;">
+         <img src="https://i.ibb.co/v6yJsW0n/default.png" alt="Globaliza Contabil" style="width: 100px; height: 100px;">
+        </div>
+        <div style="padding: 30px 20px; color: #ffffff;">
+          <h2 style="margin-bottom: 16px;">Olá ${userName || ''}</h2>
+          <p style="font-size: 16px; line-height: 1.6;">
+            Recebemos sua mensagem e em breve nossa equipe entrará em contato.
+          </p>
+          <p style="font-size: 14px; opacity: 0.9;">
+            Este é um e-mail automático de confirmação.
+          </p>
+        </div>
+        <div style="text-align: center; margin-top: 20px; color: #ffffff; font-size: 14px;">
+          <p style="margin: 0;">
+            Atenciosamente,<br/>
+            <strong>Equipe Globaliza Contabil</strong>
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+  ,
+  // Notificação para admin: novo contato do site
+  contactAdminNotification: (
+    userName: string,
+    userEmail: string,
+    userPhone: string,
+    subject: string,
+    userMessage: string
+  ) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${subject} - Novo contato do site</title>
+    </head>
+    <body style="font-family: Montserrat, sans-serif; margin: 0; padding: 0; background: linear-gradient(313deg, #013f71, #132433)!important; ">
+      <div style="max-width: 600px; margin: 0 auto; background-color: #19354f; padding: 20px; border-radius: 4px!important; margin-bottom: 30px;">
+        <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #013F71;">
+         <img src="https://i.ibb.co/v6yJsW0n/default.png" alt="Globaliza Contabil" style="width: 100px; height: 100px;">
+        </div>
+        <div style="padding: 30px 20px; color: #ffffff;">
+          <h2 style="margin-bottom: 16px;">Novo contato do site</h2>
+          <p style="font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
+            Você recebeu uma nova mensagem através do formulário de contato.
+          </p>
+          <ul style="list-style: none; padding: 0; margin: 0 0 16px 0;">
+            <li><strong>Nome:</strong> ${userName}</li>
+            <li><strong>E-mail:</strong> ${userEmail}</li>
+            ${userPhone ? `<li><strong>Telefone:</strong> ${userPhone}</li>` : ''}
+            ${subject ? `<li><strong>Assunto:</strong> ${subject}</li>` : ''}
+          </ul>
+          <div style="margin-top: 12px;">
+            <p style="margin: 0 0 8px 0;"><strong>Mensagem:</strong></p>
+            <div style="white-space: pre-wrap; line-height: 1.6;">${userMessage}</div>
+          </div>
+        </div>
+        <div style="text-align: center; margin-top: 20px; color: #ffffff; font-size: 14px;">
+          <p style="margin: 0;">
+            Atenciosamente,<br/>
+            <strong>Site Globaliza Contabil</strong>
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
 }

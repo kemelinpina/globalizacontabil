@@ -1,7 +1,8 @@
 import React from 'react'
-import { Box, Heading, Text } from '@chakra-ui/react'
+import { Box, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody } from '@chakra-ui/react'
 import Head from 'next/head'
 import HeroSection from '@/components/HeroSection'
+import Contact from '@/components/Contact'
 import PostDestaque from '../components/PostDestaque'
 import PostsCarousel from '../components/PostsCarousel'
 import BannerWhatsApp from '../components/BannerWhatsApp'
@@ -10,6 +11,7 @@ import Header from '../components/Header'
 import SectionSobre from '@/components/SectionSobre'
 
 export default function Home() {
+  const { isOpen, onClose } = useDisclosure()
   // Dados mock para testar o PostsCarousel
   const mockPosts = [
     {
@@ -92,6 +94,18 @@ export default function Home() {
 
       {/* Footer */}
       <Footer />
+
+      {/* Modal de Contato */}
+      <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Fale Conosco</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <Contact isCompact onSuccess={onClose} />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </>
   )
 } 

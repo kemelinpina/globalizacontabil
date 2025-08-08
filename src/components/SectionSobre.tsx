@@ -1,8 +1,10 @@
-import { Box, Button, Container, Flex, Heading, Icon, Link, Text } from '@chakra-ui/react'
+import { Box, Button, Container, Flex, Heading, Icon, Link, Text, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody } from '@chakra-ui/react'
 import Image from 'next/image'
 import { TbMailShare } from 'react-icons/tb'
+import Contact from '@/components/Contact'
 
 export default function SectionSobre() {
+    const { isOpen, onOpen, onClose } = useDisclosure()
     return (
         <Box mt={10} borderRadius='4px'>
             <Container minH='529px' display='flex' alignItems='center' maxW="container.xl" bg='transparent linear-gradient(114deg, #FFFFFF 0%, #FFFFFF 34%, #EBF6FF 56%, #FFFFFF 74%, #FFFFFF 100%) 0% 0% no-repeat padding-box;'>
@@ -23,7 +25,7 @@ export default function SectionSobre() {
                                 borderRadius='4px'
                                 mt={2}
                                 rightIcon={<Icon as={TbMailShare} />}
-                                onClick={() => { }}
+                                onClick={onOpen}
                                 _hover={{
                                     backgroundColor: 'red.600',
                                     textDecoration: 'none',
@@ -60,6 +62,18 @@ export default function SectionSobre() {
                     </Box>
                 </Flex>
             </Container>
+
+            {/* Modal de Contato */}
+            <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Fale Conosco</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody pb={6}>
+                        <Contact isCompact onSuccess={onClose} />
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
         </Box>
     )
 }
