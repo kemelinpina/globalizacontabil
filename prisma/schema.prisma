@@ -74,4 +74,34 @@ model Files {
   type       String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+}
+
+// Menus do site
+model Menus {
+  id          Int       @id @default(autoincrement())
+  name        String
+  location    String    @unique // header, footer, sidebar
+  is_active   Boolean   @default(true)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  menu_items  MenuItems[]
+}
+
+// Itens dos menus
+model MenuItems {
+  id          Int       @id @default(autoincrement())
+  menu_id     Int
+  parent_id   Int?      // Para submenus
+  title       String
+  url         String?   // URL externa ou interna
+  target      String    @default("_self") // _self, _blank
+  order       Int       @default(0)
+  is_active   Boolean   @default(true)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  
+  // Relações
+  menu        Menus     @relation(fields: [menu_id], references: [id], onDelete: Cascade)
+  parent      MenuItems? @relation("MenuItemParent", fields: [parent_id], references: [id])
+  children    MenuItems[] @relation("MenuItemParent")
 } 

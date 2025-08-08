@@ -16,6 +16,7 @@ import {
   UserOutlined,
   SettingOutlined,
   LogoutOutlined,
+  BarsOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
@@ -66,6 +67,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       key: '/adm/users',
       icon: <UserOutlined />,
       label: 'Usuários',
+    },
+    {
+      key: '/adm/menus',
+      icon: <BarsOutlined />,
+      label: 'Menus',
     },
     {
       key: '/adm/settings',
