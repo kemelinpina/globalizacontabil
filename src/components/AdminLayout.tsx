@@ -18,12 +18,13 @@ import {
   LogoutOutlined,
   BarsOutlined,
   FileOutlined,
+  ContactsOutlined,
+  GlobalOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { useAuth } from '../contexts/AuthContext'
 import { CgMenuMotion } from 'react-icons/cg'
-import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons'
 
 const { Header, Sider, Content } = Layout
 
@@ -68,6 +69,30 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       key: '/adm/files',
       icon: <FileOutlined />,
       label: 'Arquivos',
+    },
+    {
+      key: 'header-group',
+      icon: <GlobalOutlined />,
+      label: 'Header',
+      children: [
+        {
+          key: '/adm/header/contacts',
+          icon: <ContactsOutlined />,
+          label: 'Contatos',
+        },
+      ],
+    },
+    {
+      key: 'footer-group',
+      icon: <GlobalOutlined />,
+      label: 'Footer',
+      children: [
+        {
+          key: '/adm/footer/contacts',
+          icon: <ContactsOutlined />,
+          label: 'Contatos',
+        },
+      ],
     },
     {
       key: '/adm/users',

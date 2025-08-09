@@ -1,9 +1,9 @@
-import { Box, Container, Flex, Heading, IconButton, Text } from '@chakra-ui/react'
-import { FaInstagram, FaLinkedinIn, FaWhatsapp } from 'react-icons/fa'
+import { Box, Container, Flex, Heading, Text } from '@chakra-ui/react'
 import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
 import dayjs from 'dayjs'
+import DynamicContacts from './DynamicContacts'
 
 
 export default function Footer() {
@@ -31,56 +31,7 @@ export default function Footer() {
                         </Box>
                         <Box w='25%'>
                             <Heading as='h5' fontSize='1xl' fontWeight='bold' color='primary.500'>Redes Sociais</Heading>
-                            <Flex gap={4} alignItems='center'>
-                                <IconButton
-                                    as={Link}
-                                    href="https://www.instagram.com/globalizacontabil/"
-                                    target="_blank"
-                                    aria-label="Instagram"
-                                    icon={<FaInstagram />}
-                                    color="#E82FA4"
-                                    fontSize="23px"
-                                    size="md"
-                                    variant="ghost"
-                                    bg="white"
-                                    _hover={{
-                                        bg: 'white',
-                                        transform: 'translateY(-15px)',
-                                    }}
-                                />
-                                <IconButton
-                                    as={Link}
-                                    href="https://www.linkedin.com/company/globaliza-contabil/"
-                                    target="_blank"
-                                    aria-label="LinkedIn"
-                                    icon={<FaLinkedinIn />}
-                                    color="#0077B5"
-                                    fontSize="23px"
-                                    size="md"
-                                    variant="ghost"
-                                    bg="white"
-                                    _hover={{
-                                        bg: 'white',
-                                        transform: 'translateY(-15px)',
-                                    }}
-                                />
-                                <IconButton
-                                    as={Link}
-                                    href="https://wa.me/5511999999999"
-                                    target="_blank"
-                                    aria-label="WhatsApp"
-                                    icon={<FaWhatsapp />}
-                                    color="#66CC33"
-                                    fontSize="23px"
-                                    size="md"
-                                    variant="ghost"
-                                    bg="white"
-                                    _hover={{
-                                        bg: 'white',
-                                        transform: 'translateY(-15px)',
-                                    }}
-                                />
-                            </Flex>
+                            <DynamicContacts location="footer" />
                         </Box>
                     </Flex>
                     <Flex w='100%' px={8} justifyContent='center' mt={10} mb={4}>

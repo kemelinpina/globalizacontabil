@@ -104,4 +104,21 @@ model MenuItems {
   menu        Menus     @relation(fields: [menu_id], references: [id], onDelete: Cascade)
   parent      MenuItems? @relation("MenuItemParent", fields: [parent_id], references: [id])
   children    MenuItems[] @relation("MenuItemParent")
+}
+
+// Contatos e Redes Sociais para Header e Footer
+model Contacts {
+  id           Int      @id @default(autoincrement())
+  location     String   // header, footer
+  type         String   // telefone, whatsapp, linkedin, facebook, instagram, email, etc
+  title        String?  // Título opcional para exibição
+  link         String   // URL para redes sociais ou tel: para telefones
+  order        Int      // Ordem de exibição (único por location)
+  custom_color String?  // Cor personalizada do ícone (opcional)
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  // Índice único para evitar ordem duplicada por location
+  @@unique([location, order])
 } 

@@ -1,8 +1,8 @@
-import { Box, Container, Flex, IconButton, Link } from '@chakra-ui/react'
+import { Box, Container, Flex } from '@chakra-ui/react'
 import Image from 'next/image'
 import NextLink from 'next/link'
 import DynamicMenu from './DynamicMenu'
-import { FaInstagram, FaLinkedinIn, FaWhatsapp } from 'react-icons/fa'
+import DynamicContacts from './DynamicContacts'
 
 export default function Header() {
 
@@ -17,56 +17,7 @@ export default function Header() {
             <Box>
               <DynamicMenu location="header" />
             </Box>
-            <Flex gap={4} justifyContent='flex-end' alignItems='center'>
-              <IconButton
-                as={Link}
-                href="https://www.instagram.com/globalizacontabil/"
-                target="_blank"
-                aria-label="Instagram"
-                icon={<FaInstagram />}
-                color="#E82FA4"
-                fontSize="23px"
-                size="md"
-                variant="ghost"
-                bg="white"
-                _hover={{
-                  bg: 'white',
-                  transform: 'translateY(-15px)',
-                }}
-              />
-              <IconButton
-                as={Link}
-                href="https://www.linkedin.com/company/globaliza-contabil/"
-                target="_blank"
-                aria-label="LinkedIn"
-                icon={<FaLinkedinIn />}
-                color="#0077B5"
-                fontSize="23px"
-                size="md"
-                variant="ghost"
-                bg="white"
-                _hover={{
-                  bg: 'white',
-                  transform: 'translateY(-15px)',
-                }}
-              />
-              <IconButton
-                as={Link}
-                href="https://wa.me/5511999999999"
-                target="_blank"
-                aria-label="WhatsApp"
-                icon={<FaWhatsapp />}
-                color="#66CC33"
-                fontSize="23px"
-                size="md"
-                variant="ghost"
-                bg="white"
-                _hover={{
-                  bg: 'white',
-                  transform: 'translateY(-15px)',
-                }}
-              />
-            </Flex>
+            <DynamicContacts location="header" />
           </Flex>
         </Container>
       </Box>
