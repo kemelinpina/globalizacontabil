@@ -15,8 +15,6 @@ import {
 import {
   FileTextOutlined,
   FileProtectOutlined,
-  FolderOutlined,
-  UserOutlined,
   FileOutlined,
   TrophyOutlined,
   ClockCircleOutlined,
@@ -26,6 +24,9 @@ import AdminLayout from '../../components/AdminLayout'
 import Head from 'next/head'
 import { useAuth } from '../../contexts/AuthContext'
 import axios from 'axios'
+import { HiOutlineDocumentText, HiOutlineUsers } from 'react-icons/hi'
+import { AiOutlineFileProtect } from 'react-icons/ai'
+import { LuFolder } from 'react-icons/lu'
 
 const { Title, Text } = Typography
 
@@ -156,7 +157,7 @@ export default function AdminHome() {
               Dashboard
             </Title>
             <Text type="secondary">
-              Bem-vindo, {user?.name}! Aqui está um resumo do seu site.
+              Bem-vindo, <strong>{user?.name}</strong>! Aqui está um resumo do seu site.
             </Text>
           </div>
 
@@ -167,10 +168,10 @@ export default function AdminHome() {
                 <Statistic
                   title="Posts"
                   value={stats?.posts.total || 0}
-                  prefix={<FileTextOutlined style={{ color: '#1890ff' }} />}
+                  prefix={<HiOutlineDocumentText style={{ color: '#1890ff', fontSize: '32px' }} />}
                   suffix={
                     <Space direction="vertical" size={0}>
-                      <Text style={{ fontSize: '12px', color: '#52c41a' }}>
+                      <Text style={{ fontSize: '12px', color: '#1890ff', fontWeight: 'bold' }}>
                         {stats?.posts.published || 0} publicados
                       </Text>
                     </Space>
@@ -183,9 +184,9 @@ export default function AdminHome() {
                 <Statistic
                   title="Páginas"
                   value={stats?.pages.total || 0}
-                  prefix={<FileProtectOutlined style={{ color: '#722ed1' }} />}
+                  prefix={<AiOutlineFileProtect style={{ color: '#722ed1', fontSize: '32px' }} />}
                   suffix={
-                    <Text style={{ fontSize: '12px', color: '#52c41a' }}>
+                    <Text style={{ fontSize: '12px', color: '#722ed1', fontWeight: 'bold'}}>
                       {stats?.pages.published || 0} publicadas
                     </Text>
                   }
@@ -197,9 +198,9 @@ export default function AdminHome() {
                 <Statistic
                   title="Categorias"
                   value={stats?.categories.total || 0}
-                  prefix={<FolderOutlined style={{ color: '#fa8c16' }} />}
+                  prefix={<LuFolder style={{ color: '#fa8c16', fontSize: '32px' }} />}
                   suffix={
-                    <Text style={{ fontSize: '12px', color: '#52c41a' }}>
+                    <Text style={{ fontSize: '12px', color: '##1890ff', fontWeight: 'bold' }}>
                       {stats?.categories.active || 0} ativas
                     </Text>
                   }
@@ -211,9 +212,9 @@ export default function AdminHome() {
                 <Statistic
                   title="Usuários"
                   value={stats?.users.total || 0}
-                  prefix={<UserOutlined style={{ color: '#f5222d' }} />}
+                  prefix={<HiOutlineUsers style={{ color: '#f5222d', fontSize: '32px' }} />}
                   suffix={
-                    <Text style={{ fontSize: '12px', color: '#52c41a' }}>
+                    <Text style={{ fontSize: '12px', color: '##1890ff', fontWeight: 'bold' }}>
                       {stats?.users.active || 0} ativos
                     </Text>
                   }
@@ -323,7 +324,7 @@ export default function AdminHome() {
                             <Text ellipsis style={{ maxWidth: 200 }}>
                               {item.title}
                             </Text>
-                            <Tag color={getStatusColor(item.status)} size="small">
+                            <Tag color={getStatusColor(item.status)}>
                               {getStatusText(item.status)}
                             </Tag>
                           </Space>
@@ -362,7 +363,7 @@ export default function AdminHome() {
                             <Text ellipsis style={{ maxWidth: 200 }}>
                               {item.title}
                             </Text>
-                            <Tag color={getStatusColor(item.status)} size="small">
+                            <Tag color={getStatusColor(item.status)}>
                               {getStatusText(item.status)}
                             </Tag>
                           </Space>
