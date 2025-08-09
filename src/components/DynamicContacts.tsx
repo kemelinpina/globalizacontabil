@@ -14,7 +14,7 @@ interface Contact {
 }
 
 interface DynamicContactsProps {
-  location: 'header' | 'footer'
+  location: 'header' | 'footer' | 'home'
 }
 
 export default function DynamicContacts({ location }: DynamicContactsProps) {
@@ -42,7 +42,7 @@ export default function DynamicContacts({ location }: DynamicContactsProps) {
   }
 
   return (
-    <Flex gap={4} justifyContent={location === 'header' ? 'flex-end' : 'flex-start'} alignItems='center'>
+    <Flex gap={4} justifyContent={location === 'header' ? 'flex-end' : location === 'home' ? 'center' : 'flex-start'} alignItems='center'>
       {contacts.map((contact) => {
         const IconComponent = getContactIcon(contact.type)
         const color = getContactColor(contact.type, contact.custom_color)

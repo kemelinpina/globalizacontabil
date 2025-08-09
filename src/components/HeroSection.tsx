@@ -7,10 +7,9 @@ import {
   Button,
   VStack,
   HStack,
-  IconButton,
   Link,
 } from '@chakra-ui/react'
-import { FaInstagram, FaLinkedinIn, FaWhatsapp } from 'react-icons/fa'
+import DynamicContacts from './DynamicContacts'
 
 export default function HeroSection () {
   return (
@@ -103,62 +102,13 @@ export default function HeroSection () {
                   textDecoration: 'none',
                 }}
                 as={Link}
-                href="/posts"
+                href="/blog"
               >
                 ACESSE NOSSO CONTEÚDO
               </Button>
 
-              {/* Social Media Buttons */}
-              <HStack spacing={4}>
-                <IconButton
-                  as={Link}
-                  href="https://www.instagram.com/globalizacontabil/"
-                  target="_blank"
-                  aria-label="Instagram"
-                  icon={<FaInstagram />}
-                  color="#E82FA4"
-                  fontSize="23px"
-                  size="md"
-                  variant="ghost"
-                  bg="white"
-                  _hover={{
-                    bg: 'white',
-                    transform: 'translateY(-15px)',
-                  }}
-                />
-                <IconButton
-                  as={Link}
-                  href="https://www.linkedin.com/company/globaliza-contabil/"
-                  target="_blank"
-                  aria-label="LinkedIn"
-                  icon={<FaLinkedinIn />}
-                  color="#0077B5"
-                  fontSize="23px"
-                  size="md"
-                  variant="ghost"
-                  bg="white"
-                  _hover={{
-                    bg: 'white',
-                    transform: 'translateY(-15px)',
-                  }}
-                />
-                <IconButton
-                  as={Link}
-                  href="https://wa.me/5511999999999"
-                  target="_blank"
-                  aria-label="WhatsApp"
-                  icon={<FaWhatsapp />}
-                  color="#66CC33"
-                  fontSize="23px"
-                  size="md"
-                  variant="ghost"
-                  bg="white"
-                  _hover={{
-                    bg: 'white',
-                    transform: 'translateY(-15px)',
-                  }}
-                />
-              </HStack>
+              {/* Dynamic Social Media Buttons */}
+              <DynamicContacts location="home" />
             </HStack>
           </VStack>
         </Container>

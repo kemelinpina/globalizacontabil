@@ -71,6 +71,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       label: 'Arquivos',
     },
     {
+      key: 'home-group',
+      icon: <GlobalOutlined />,
+      label: 'Home',
+      children: [
+        {
+          key: '/adm/home/contacts',
+          icon: <ContactsOutlined />,
+          label: 'Contatos',
+        },
+      ],
+    },
+    {
       key: 'header-group',
       icon: <GlobalOutlined />,
       label: 'Header',
