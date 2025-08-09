@@ -22,6 +22,7 @@ model Users {
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
   posts         Posts[]   // Relação com posts
+  pages         Pages[]   // Relação com páginas
 }
 
 // Categorias simplificadas - apenas para badges
@@ -148,4 +149,31 @@ model BannerWhatsApp {
   is_active        Boolean  @default(true)
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
+}
+
+// Páginas Dinâmicas
+model Pages {
+  id               Int      @id @default(autoincrement())
+  title            String
+  content          String   // Conteúdo HTML do CKEditor
+  slug             String   @unique
+  excerpt          String?  // Resumo da página
+  featured_image   String?  // Imagem de destaque
+  social_image     String?  // Imagem para redes sociais
+  status           String   @default("draft") // draft, published, archived
+  author_id        Int
+  meta_title       String?  // SEO
+  meta_description String?  // SEO
+  key_word_seo     String?  // SEO
+  view_count       Int      @default(0)
+  is_featured      Boolean  @default(false)  // Página em destaque
+  template         String   @default("default") // Template da página
+  custom_css       String?  // CSS personalizado
+  custom_js        String?  // JavaScript personalizado
+  published_at     DateTime?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+  
+  // Relações
+  author           Users    @relation(fields: [author_id], references: [id])
 } 

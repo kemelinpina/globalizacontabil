@@ -21,6 +21,7 @@ import {
   ContactsOutlined,
   GlobalOutlined,
   WhatsAppOutlined,
+  FileProtectOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
@@ -60,6 +61,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       key: '/adm/posts',
       icon: <FileTextOutlined />,
       label: 'Posts',
+    },
+    {
+      key: '/adm/pages',
+      icon: <FileProtectOutlined />,
+      label: 'Páginas',
     },
     {
       key: '/adm/categories',
