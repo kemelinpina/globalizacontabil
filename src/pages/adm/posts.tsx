@@ -6,12 +6,14 @@ import {
   Space,
   message,
   Popconfirm,
+  Input,
 } from 'antd'
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
+  SearchOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import AdminLayout from '../../components/AdminLayout'
@@ -29,12 +31,14 @@ interface Post {
     name: string
   }
   created_at: string
-  view_count: number
+  updated_at: string
 }
 
 export default function PostsPage() {
   const [posts, setPosts] = useState<Post[]>([])
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchText, setSearchText] = useState('')
   const router = useRouter()
 
   const fetchPosts = useCallback(async () => {
@@ -42,6 +46,7 @@ export default function PostsPage() {
       const response = await fetch('/api/pg/posts')
       const data = await response.json()
       setPosts(data.posts || [])
+      setFilteredPosts(data.posts || [])
     } catch (error) {
       console.error('Erro ao buscar posts:', error)
       message.error('Erro ao carregar posts')
@@ -53,6 +58,25 @@ export default function PostsPage() {
   useEffect(() => {
     fetchPosts()
   }, [fetchPosts])
+
+  // Efeito para filtrar posts quando há busca
+  useEffect(() => {
+    if (searchText) {
+      const filtered = posts.filter(post =>
+        post.title.toLowerCase().includes(searchText.toLowerCase()) ||
+        post.author.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        post.category.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        getStatusText(post.status).toLowerCase().includes(searchText.toLowerCase())
+      )
+      setFilteredPosts(filtered)
+    } else {
+      setFilteredPosts(posts)
+    }
+  }, [posts, searchText])
+
+  const handleSearch = (value: string) => {
+    setSearchText(value)
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -115,6 +139,12 @@ export default function PostsPage() {
       render: (category: { name: string }) => (
         <Tag color="blue">{category.name}</Tag>
       ),
+      filters: Array.from(new Set(posts.map(post => post.category.name))).map(categoryName => ({
+        text: categoryName,
+        value: categoryName,
+      })),
+      onFilter: (value: unknown, record: Post) => record.category.name === value,
+      filterSearch: true,
     },
     {
       title: 'Autor',
@@ -131,18 +161,29 @@ export default function PostsPage() {
           {getStatusText(status)}
         </Tag>
       ),
-    },
-    {
-      title: 'Visualizações',
-      dataIndex: 'view_count',
-      key: 'view_count',
-      render: (count: number) => count || 0,
+      filters: [
+        { text: 'Publicado', value: 'published' },
+        { text: 'Rascunho', value: 'draft' },
+        { text: 'Arquivado', value: 'archived' },
+      ],
+      onFilter: (value: unknown, record: Post) => record.status === value,
     },
     {
       title: 'Criado em',
       dataIndex: 'created_at',
       key: 'created_at',
       render: (date: string) => new Date(date).toLocaleDateString('pt-BR'),
+      sorter: (a: Post, b: Post) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      sortDirections: ['descend' as const, 'ascend' as const],
+      defaultSortOrder: 'descend' as const,
+    },
+    {
+      title: 'Atualizado em',
+      dataIndex: 'updated_at',
+      key: 'updated_at',
+      render: (date: string) => new Date(date).toLocaleDateString('pt-BR'),
+      sorter: (a: Post, b: Post) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime(),
+      sortDirections: ['descend' as const, 'ascend' as const],
     },
     {
       title: 'Ações',
@@ -200,13 +241,23 @@ export default function PostsPage() {
             }}>
               Posts
             </h1>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => router.push('/adm/posts/create')}
-            >
-              Novo Post
-            </Button>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <Input
+                placeholder="Buscar posts..."
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={(e) => handleSearch(e.target.value)}
+                style={{ width: '300px' }}
+                allowClear
+              />
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => router.push('/adm/posts/create')}
+              >
+                Novo Post
+              </Button>
+            </div>
           </div>
 
           <div style={{
@@ -216,7 +267,7 @@ export default function PostsPage() {
           }}>
             <Table
               columns={columns}
-              dataSource={posts}
+              dataSource={filteredPosts}
               rowKey="id"
               loading={loading}
               pagination={{

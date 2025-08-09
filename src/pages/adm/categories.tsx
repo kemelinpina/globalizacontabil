@@ -18,9 +18,11 @@ import {
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
+  SearchOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import AdminLayout from '../../components/AdminLayout'
+import ImageUpload from '../../components/ImageUpload'
 import Head from 'next/head'
 
 interface Category {
@@ -45,9 +47,11 @@ interface FormValues {
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [modalVisible, setModalVisible] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [searchText, setSearchText] = useState('')
   const [form] = Form.useForm()
   const router = useRouter()
 
@@ -56,6 +60,7 @@ export default function CategoriesPage() {
       const response = await fetch('/api/pg/categories')
       const data = await response.json()
       setCategories(data.categories || [])
+      setFilteredCategories(data.categories || [])
     } catch (error) {
       console.error('Erro ao buscar categorias:', error)
       message.error('Erro ao carregar categorias')
@@ -67,6 +72,22 @@ export default function CategoriesPage() {
   useEffect(() => {
     fetchCategories()
   }, [fetchCategories])
+
+  // Efeito para filtrar categorias quando há busca
+  useEffect(() => {
+    if (searchText) {
+      const filtered = categories.filter(category =>
+        category.name.toLowerCase().includes(searchText.toLowerCase())
+      )
+      setFilteredCategories(filtered)
+    } else {
+      setFilteredCategories(categories)
+    }
+  }, [categories, searchText])
+
+  const handleSearch = (value: string) => {
+    setSearchText(value)
+  }
 
   const handleCreate = () => {
     setEditingCategory(null)
@@ -227,6 +248,19 @@ export default function CategoriesPage() {
           {active ? 'Ativa' : 'Inativa'}
         </Tag>
       ),
+      filters: [
+        { text: 'Ativa', value: true },
+        { text: 'Inativa', value: false },
+      ],
+      onFilter: (value: unknown, record: Category) => record.is_active === value,
+    },
+    {
+      title: 'Atualizado em',
+      dataIndex: 'updated_at',
+      key: 'updated_at',
+      render: (date: string) => new Date(date).toLocaleDateString('pt-BR'),
+      sorter: (a: Category, b: Category) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime(),
+      sortDirections: ['descend' as const, 'ascend' as const],
     },
     {
       title: 'Ações',
@@ -280,13 +314,23 @@ export default function CategoriesPage() {
             <Heading size="lg" style={{ margin: 0 }}>
               Categorias
             </Heading>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleCreate}
-            >
-              Nova Categoria
-            </Button>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <Input
+                placeholder="Buscar categorias..."
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={(e) => handleSearch(e.target.value)}
+                style={{ width: '300px' }}
+                allowClear
+              />
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleCreate}
+              >
+                Nova Categoria
+              </Button>
+            </div>
           </div>
 
           <Box
@@ -298,7 +342,7 @@ export default function CategoriesPage() {
           >
             <Table
               columns={columns}
-              dataSource={categories}
+              dataSource={filteredCategories}
               rowKey="id"
               loading={loading}
               pagination={{
@@ -359,9 +403,14 @@ export default function CategoriesPage() {
 
             <Form.Item
               name="icon"
-              label="URL do Ícone (opcional)"
+              label="Ícone da Categoria (opcional)"
             >
-              <Input placeholder="https://exemplo.com/icon.svg" />
+              <ImageUpload
+                value={form.getFieldValue('icon') || ''}
+                placeholder="Clique para fazer upload do ícone"
+                onUploadSuccess={(url) => form.setFieldsValue({ icon: url })}
+                onUploadError={(error) => message.error(error)}
+              />
             </Form.Item>
 
             <Form.Item

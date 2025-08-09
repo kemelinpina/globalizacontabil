@@ -17,6 +17,7 @@ import {
   SettingOutlined,
   LogoutOutlined,
   BarsOutlined,
+  FileOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
@@ -62,6 +63,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       key: '/adm/categories',
       icon: <FolderOutlined />,
       label: 'Categorias',
+    },
+    {
+      key: '/adm/files',
+      icon: <FileOutlined />,
+      label: 'Arquivos',
     },
     {
       key: '/adm/users',
