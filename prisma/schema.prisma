@@ -121,4 +121,31 @@ model Contacts {
 
   // Índice único para evitar ordem duplicada por location
   @@unique([location, order])
+}
+
+// Conteúdo da Seção Sobre na Home
+model HomeAbout {
+  id                 Int      @id @default(autoincrement())
+  title              String   @default("Sobre Andre Paravela")
+  content            String   // Conteúdo HTML do CKEditor
+  photo              String?  // URL da foto
+  download_button_text String @default("Baixe o novo material")
+  download_file      String?  // URL do arquivo para download
+  is_active          Boolean  @default(true)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+}
+
+// Banner WhatsApp na Home
+model BannerWhatsApp {
+  id               Int      @id @default(autoincrement())
+  title            String   @default("Acesse nosso grupo de WhatsApp")
+  description      String?  // Descrição opcional
+  button_text      String   @default("Entrar para o grupo")
+  whatsapp_link    String   @default("https://wa.me/5511999999999")
+  background_image String?  // URL da imagem de background
+  background_color String   @default("#013F71") // Cor de filtro sobre a imagem
+  is_active        Boolean  @default(true)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 } 

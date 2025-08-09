@@ -20,6 +20,7 @@ import {
   FileOutlined,
   ContactsOutlined,
   GlobalOutlined,
+  WhatsAppOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
@@ -79,6 +80,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           key: '/adm/home/contacts',
           icon: <ContactsOutlined />,
           label: 'Contatos',
+        },
+        {
+          key: '/adm/home/about',
+          icon: <UserOutlined />,
+          label: 'Sobre',
+        },
+        {
+          key: '/adm/home/banner-whatsapp',
+          icon: <WhatsAppOutlined />,
+          label: 'Banner WhatsApp',
         },
       ],
     },

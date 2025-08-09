@@ -1,17 +1,76 @@
-import { Box, Button, Container, Flex, Heading } from '@chakra-ui/react'
+import { useState, useEffect } from 'react'
+import { Box, Button, Container, Flex, Heading, Text } from '@chakra-ui/react'
 import { FaWhatsapp } from 'react-icons/fa'
 import Link from 'next/link'
 
+interface BannerWhatsAppData {
+  id: number
+  title: string
+  description?: string
+  button_text: string
+  whatsapp_link: string
+  background_image?: string
+  background_color: string
+  is_active: boolean
+}
+
 export default function BannerWhatsApp() {
+    const [bannerData, setBannerData] = useState<BannerWhatsAppData | null>(null)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchBannerData = async () => {
+            try {
+                const response = await fetch('/api/pg/banner-whatsapp')
+                const data = await response.json()
+                setBannerData(data.bannerWhatsApp)
+            } catch (error) {
+                console.error('Erro ao buscar dados do banner WhatsApp:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchBannerData()
+    }, [])
+
+    // Se não há dados configurados ou está inativo, não mostra o banner
+    if (loading || !bannerData || !bannerData.is_active) {
+        return null
+    }
+
     return (
         <>
             <Box p={0}>
                 <Container maxW="container.xl" p={0}>
-                    <Flex w='100%' bg='primary.500' minH='276px' p={8} borderRadius='4px' gap={4} alignItems='center' flexDirection='column' justifyContent='center'>
-                        <Heading as='h3' fontSize='3xl' fontWeight='bold' color='white'>Acesse nosso grupo de WhatsApp</Heading>
+                    <Flex 
+                        w='100%' 
+                        bg={bannerData.background_color || 'primary.500'}
+                        backgroundImage={bannerData.background_image ? `url(${bannerData.background_image})` : 'none'}
+                        backgroundSize='cover'
+                        backgroundPosition='center'
+                        backgroundBlendMode={bannerData.background_image ? 'overlay' : 'normal'}
+                        minH='276px' 
+                        p={8} 
+                        borderRadius='4px' 
+                        gap={4} 
+                        alignItems='center' 
+                        flexDirection='column' 
+                        justifyContent='center'
+                    >
+                        <Heading as='h3' fontSize='3xl' fontWeight='bold' color='white'>
+                            {bannerData.title}
+                        </Heading>
+                        
+                        {bannerData.description && (
+                            <Text fontSize='lg' color='white' textAlign='center' maxW='2xl'>
+                                {bannerData.description}
+                            </Text>
+                        )}
+                        
                         <Button
                             as={Link}
-                            href='https://wa.me/5511999999999'
+                            href={bannerData.whatsapp_link}
                             target='_blank'
                             aria-label='WhatsApp'
                             colorScheme='whatsapp'
@@ -25,7 +84,7 @@ export default function BannerWhatsApp() {
                                 transform: 'translateY(-10px)'
                             }}
                         >
-                            Entrar para o grupo
+                            {bannerData.button_text}
                         </Button>
                     </Flex>
                 </Container>
