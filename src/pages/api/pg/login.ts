@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import bcrypt from 'bcryptjs'
 import { prisma } from '../../../lib/prisma'
+import { logAuth } from '../../../utils/logService'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -34,7 +35,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Retornar dados do usuário (sem a senha)
-    const { password: _, ...userWithoutPassword } = user
+    const { password: userPassword, ...userWithoutPassword } = user
+
+    // Registrar log de login
+    await logAuth(user.id, 'LOGIN', req, `Login realizado por ${user.name}`)
 
     return res.status(200).json({
       message: 'Login realizado com sucesso',

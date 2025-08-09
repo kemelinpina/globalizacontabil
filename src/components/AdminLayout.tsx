@@ -22,6 +22,7 @@ import {
   GlobalOutlined,
   WhatsAppOutlined,
   FileProtectOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
@@ -132,6 +133,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       key: '/adm/menus',
       icon: <BarsOutlined />,
       label: 'Menus',
+    },
+    {
+      key: '/adm/logs',
+      icon: <UnorderedListOutlined />,
+      label: 'Logs',
     },
     {
       key: '/adm/settings',

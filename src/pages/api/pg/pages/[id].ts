@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../../lib/prisma'
+import { logUpdate, logDelete } from '../../../../utils/logService'
 
 // Função para gerar slug único (reutilizada da API principal)
 const generateUniqueSlug = async (title: string, excludeId?: number): Promise<string> => {
@@ -138,6 +139,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       })
 
+      // Registrar log de atualização
+      await logUpdate(
+        parseInt(author_id),
+        'pages',
+        parseInt(id as string),
+        updatedPage.title,
+        existingPage,
+        updatedPage,
+        req,
+        `Página "${updatedPage.title}" atualizada`
+      )
+
       return res.status(200).json({
         message: 'Página atualizada com sucesso',
         page: updatedPage
@@ -159,6 +172,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!existingPage) {
         return res.status(404).json({ message: 'Página não encontrada' })
       }
+
+      // Registrar log de exclusão antes de deletar
+      await logDelete(
+        undefined, // Não temos o user_id na requisição de delete, seria necessário adicionar autenticação
+        'pages',
+        parseInt(id as string),
+        existingPage.title,
+        existingPage,
+        req,
+        `Página "${existingPage.title}" excluída`
+      )
 
       // Deletar página
       await prisma.pages.delete({

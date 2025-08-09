@@ -23,6 +23,7 @@ model Users {
   updated_at    DateTime  @updatedAt
   posts         Posts[]   // Relação com posts
   pages         Pages[]   // Relação com páginas
+  logs          Logs[]    // Relação com logs
 }
 
 // Categorias simplificadas - apenas para badges
@@ -176,4 +177,23 @@ model Pages {
   
   // Relações
   author           Users    @relation(fields: [author_id], references: [id])
+}
+
+// Sistema de Logs para auditoria
+model Logs {
+  id          Int      @id @default(autoincrement())
+  user_id     Int?     // Usuário que executou a ação (nullable para ações do sistema)
+  action      String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT
+  table_name  String   // Nome da tabela afetada (posts, categories, users, etc)
+  record_id   Int?     // ID do registro afetado (nullable para ações gerais)
+  record_name String?  // Nome/título do registro para facilitar identificação
+  old_data    String?  // Dados anteriores (JSON) - apenas para UPDATE e DELETE
+  new_data    String?  // Novos dados (JSON) - apenas para CREATE e UPDATE
+  ip_address  String?  // IP do usuário
+  user_agent  String?  // Navegador/dispositivo
+  description String?  // Descrição adicional da ação
+  created_at  DateTime @default(now())
+  
+  // Relações
+  user        Users?   @relation(fields: [user_id], references: [id])
 } 

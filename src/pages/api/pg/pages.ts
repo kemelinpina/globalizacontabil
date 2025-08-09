@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
+import { logCreate } from '../../../utils/logService'
 
 // Função para gerar slug único
 const generateUniqueSlug = async (title: string, excludeId?: number): Promise<string> => {
@@ -193,6 +194,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
         }
       })
+
+      // Registrar log de criação
+      await logCreate(
+        parseInt(author_id),
+        'pages',
+        page.id,
+        page.title,
+        page,
+        req,
+        `Página "${page.title}" criada`
+      )
 
       return res.status(201).json({
         message: 'Página criada com sucesso',

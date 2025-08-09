@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
+import { logCreate } from '../../../utils/logService'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -102,6 +103,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
     })
+
+    // Registrar log de criação
+    await logCreate(
+      author_id,
+      'posts',
+      post.id,
+      post.title,
+      post,
+      req,
+      `Post "${post.title}" criado`
+    )
 
     return res.status(201).json({
       message: 'Post criado com sucesso',

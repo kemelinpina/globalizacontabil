@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../../lib/prisma'
+import { logUpdate, logDelete } from '../../../../utils/logService'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query
@@ -107,6 +108,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         calculatedReadingTime = Math.ceil(wordCount / 200) // 200 palavras por minuto
       }
 
+      // Buscar dados anteriores para o log
+      const oldPost = await prisma.posts.findUnique({
+        where: { id: postId }
+      })
+
       // Definir data de publicação se status for 'published' e não houver data
       let publishDate = published_at
       if (status === 'published' && !published_at) {
@@ -152,6 +158,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       })
 
+      // Registrar log de atualização
+      await logUpdate(
+        parseInt(author_id),
+        'posts',
+        postId,
+        updatedPost.title,
+        oldPost,
+        updatedPost,
+        req,
+        `Post "${updatedPost.title}" atualizado`
+      )
+
       return res.status(200).json({ 
         message: 'Post atualizado com sucesso',
         post: updatedPost
@@ -173,6 +191,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!existingPost) {
         return res.status(404).json({ message: 'Post não encontrado' })
       }
+
+      // Registrar log de exclusão antes de deletar
+      await logDelete(
+        undefined, // Não temos o user_id na requisição de delete, seria necessário adicionar autenticação
+        'posts',
+        postId,
+        existingPost.title,
+        existingPost,
+        req,
+        `Post "${existingPost.title}" excluído`
+      )
 
       // Deletar o post
       await prisma.posts.delete({
