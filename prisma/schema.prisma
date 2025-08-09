@@ -69,13 +69,14 @@ model Posts {
 
 // Arquivos/Imagens
 model Files {
-  id         Int      @id @default(autoincrement())
-  name       String
-  url        String
-  size       Int?
-  type       String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  name         String
+  url          String
+  size         Int?
+  type         String?
+  cloudinary_id String?  // ID do arquivo no Cloudinary para poder deletar
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 }
 
 // Menus do site

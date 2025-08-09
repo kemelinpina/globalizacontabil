@@ -1,27 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import multer from 'multer'
 import { prisma } from '../../../lib/prisma'
-import path from 'path'
-import fs from 'fs'
+import { uploadToCloudinary } from '../../../lib/cloudinary'
 
-// Configurar multer para upload
+// Configurar multer para upload em memória
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      // Criar pasta uploads se não existir
-      const uploadDir = path.join(process.cwd(), 'public', 'uploads')
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true })
-      }
-      cb(null, uploadDir)
-    },
-    filename: (req, file, cb) => {
-      // Gerar nome único para o arquivo
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-      const ext = path.extname(file.originalname)
-      cb(null, file.fieldname + '-' + uniqueSuffix + ext)
-    }
-  }),
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
   },
@@ -56,13 +40,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ message: 'Nenhum arquivo foi enviado' })
     }
 
+    // Upload para Cloudinary
+    const cloudinaryResult = await uploadToCloudinary(
+      req.file.buffer,
+      req.file.originalname,
+      'globalizacontabil'
+    )
+
     // Salvar informações do arquivo no banco
     const fileRecord = await prisma.files.create({
       data: {
         name: req.file.originalname,
-        url: `/uploads/${req.file.filename}`,
-        size: req.file.size,
-        type: req.file.mimetype
+        url: cloudinaryResult.secure_url,
+        size: cloudinaryResult.bytes,
+        type: req.file.mimetype,
+        cloudinary_id: cloudinaryResult.public_id
       }
     })
 
@@ -73,7 +65,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         name: fileRecord.name,
         url: fileRecord.url,
         size: fileRecord.size,
-        type: fileRecord.type
+        type: fileRecord.type,
+        cloudinary_id: cloudinaryResult.public_id
       }
     })
 

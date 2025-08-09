@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '../../../lib/prisma'
-import path from 'path'
-import fs from 'fs'
+import { deleteFromCloudinary } from '../../../lib/cloudinary'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query
@@ -17,10 +16,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(404).json({ message: 'Arquivo não encontrado' })
       }
 
-      // Deletar o arquivo físico
-      const filePath = path.join(process.cwd(), 'public', file.url)
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath)
+      // Deletar do Cloudinary se tiver cloudinary_id
+      if (file.cloudinary_id) {
+        try {
+          await deleteFromCloudinary(file.cloudinary_id)
+        } catch (error) {
+          console.error('Erro ao deletar do Cloudinary:', error)
+          // Continua mesmo se der erro no Cloudinary
+        }
       }
 
       // Deletar o registro do banco
