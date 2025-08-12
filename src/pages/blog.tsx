@@ -13,20 +13,19 @@ import {
     VStack,
     HStack,
     Badge,
-    Image,
     Spinner,
     Select,
     Card,
     CardBody,
     CardHeader,
 } from '@chakra-ui/react'
+import Image from 'next/image'
 import { useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody } from '@chakra-ui/react'
 import { FiSearch, FiCalendar, FiUser, FiEye, FiClock, FiMail } from 'react-icons/fi'
 import Head from 'next/head'
 import Header from '@/components/Header'
 import Contact from '@/components/Contact'
 import Link from 'next/link'
-import CloudinaryImage from '@/components/CloudinaryImage'
 
 interface Post {
     id: number
@@ -236,7 +235,7 @@ export default function Blog() {
                                 </Flex>
                             ) : posts.length === 0 ? (
                                 <Box display="flex" flexDirection="column" textAlign="center" py={10} justifyContent="center" alignItems="center">
-                                    <ImageNext src="/empty-post.svg" alt="Nenhum post encontrado" width={200} height={200} />
+                                    <Image src="/empty-post.svg" alt="Nenhum post encontrado" width={200} height={200} />
                                     <Text fontSize="lg" color="primary.500">
                                         Nenhum post encontrado.
                                     </Text>
@@ -258,20 +257,12 @@ export default function Blog() {
                                                             w={{ base: '100%', md: '200px' }}
                                                             h={{ base: '200px', md: '150px' }}
                                                             flexShrink={0}
-                                                        >
-                                                            <CloudinaryImage
-                                                                src={post.featured_image}
-                                                                alt={post.title}
-                                                                width={200}
-                                                                height={150}
-                                                                style={{
-                                                                    width: '100%',
-                                                                    height: '100%',
-                                                                    objectFit: 'cover',
-                                                                    borderRadius: '8px'
-                                                                }}
-                                                            />
-                                                        </Box>
+                                                            bgImage={post.featured_image}
+                                                            bgSize="cover"
+                                                            bgPosition="center"
+                                                            bgRepeat="no-repeat"
+                                                            borderRadius="8px"
+                                                        />
                                                     )}
 
                                                     {/* Conteúdo */}

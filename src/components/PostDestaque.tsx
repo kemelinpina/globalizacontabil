@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Box, Heading, Text, Link, Container, Flex, Badge, Icon } from '@chakra-ui/react'
 import { FiCalendar } from 'react-icons/fi'
 import dayjs from 'dayjs'
-import CloudinaryImage from './CloudinaryImage'
+
 
 interface Post {
   id: number
