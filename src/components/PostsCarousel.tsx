@@ -49,27 +49,27 @@ export default function PostsCarousel({
       try {
         setIsLoading(true)
         
-        // Primeiro, tentar buscar posts em destaque
-        let response = await fetch('/api/pg/posts?status=published&featured_only=true&limit=10')
-        let data = await response.json()
+        console.log('🔍 Buscando posts...')
         
-        let publishedPosts = data.posts || []
+        // Buscar todos os posts publicados
+        const response = await fetch('/api/pg/posts?status=published&limit=20')
+        const data = await response.json()
         
-        // Se não houver posts em destaque, buscar posts publicados normais
-        if (publishedPosts.length === 0) {
-          response = await fetch('/api/pg/posts?status=published&limit=10')
-          data = await response.json()
-          publishedPosts = data.posts || []
-        }
+        console.log('📊 Posts encontrados:', data)
+        
+        const publishedPosts = data.posts || []
         
         if (publishedPosts.length > 0) {
+          console.log('✅ Posts carregados:', publishedPosts.length)
           setPosts(publishedPosts)
           
           // Definir o primeiro post como destaque
           setFeaturedPost(publishedPosts[0])
+        } else {
+          console.log('❌ Nenhum post encontrado')
         }
       } catch (error) {
-        console.error('Erro ao buscar posts:', error)
+        console.error('❌ Erro ao buscar posts:', error)
       } finally {
         setIsLoading(false)
       }
@@ -77,6 +77,7 @@ export default function PostsCarousel({
 
     // Se posts foram passados como prop, usar eles
     if (propPosts && propPosts.length > 0) {
+      console.log('📥 Usando posts das props:', propPosts.length)
       setPosts(propPosts)
       setFeaturedPost(propPosts[0])
       setIsLoading(false)
