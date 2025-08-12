@@ -127,9 +127,9 @@ export default function ImageUpload({
             src={preview}
             alt="Preview"
             style={{
-              width: '100%',
+              width: '200px',
               height: '200px',
-              objectFit: 'cover',
+              objectFit: 'contain',
             }}
           />
           <HStack position="absolute" top={2} right={2} spacing={2}>

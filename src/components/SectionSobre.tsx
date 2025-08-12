@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Box, Button, Container, Flex, Heading, Icon, Link, Text, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody } from '@chakra-ui/react'
-import Image from 'next/image'
+
 import { TbMailShare } from 'react-icons/tb'
 import Contact from '@/components/Contact'
 
@@ -106,11 +106,15 @@ export default function SectionSobre() {
                     </Box>
                     <Box w='50%' position='relative'>
                         <Box w='100%' borderRadius='4px' overflow='hidden'>
-                            <Image 
+                            <img 
                                 src={aboutData.photo || '/andre-paravela-globaliza-contabil-colorida.png'} 
                                 alt={aboutData.title}
-                                width={600} 
-                                height={600} 
+                                style={{
+                                    width: '100%',
+                                    height: 'auto',
+                                    maxWidth: '600px',
+                                    maxHeight: '600px'
+                                }}
                             />
                         </Box>
                         <Box position='absolute' top={'10%'} right={'-12%'} boxSize={40} bg='linear-gradient(114deg, #8fc2fd 0%, #235da0 34%, #0d335e 74%)' borderRadius='4px' zIndex={1}></Box>
