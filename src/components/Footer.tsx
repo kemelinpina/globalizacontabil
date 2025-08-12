@@ -4,6 +4,7 @@ import Image from 'next/image'
 import React from 'react'
 import dayjs from 'dayjs'
 import DynamicContacts from './DynamicContacts'
+import CookieConsent from './CookieConsent'
 
 
 export default function Footer() {
@@ -39,6 +40,14 @@ export default function Footer() {
                     </Flex>
                 </Container>
             </Box>
+            
+            {/* Componente de Consentimento de Cookies */}
+            <CookieConsent 
+                policyUrl="/politica-privacidade"
+                cookieUrl="/politica-cookies"
+                onAccept={() => console.log('Cookies aceitos')}
+                onDecline={() => console.log('Cookies rejeitados')}
+            />
         </>
     )
 }
