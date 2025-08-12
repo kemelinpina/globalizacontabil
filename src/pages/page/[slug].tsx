@@ -2,10 +2,10 @@ import { GetServerSideProps } from 'next'
 import { useState, useEffect } from 'react'
 import { Box, Container, Heading, Text, VStack } from '@chakra-ui/react'
 import Head from 'next/head'
-import Image from 'next/image'
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
 import { prisma } from '../../lib/prisma'
+import CloudinaryImage from '../../components/CloudinaryImage'
 
 interface Page {
     id: number
@@ -132,7 +132,7 @@ export default function PageView({ page, notFound }: PageProps) {
                     {/* Imagem de Destaque */}
                     {page.featured_image && (
                         <Box mb={8} textAlign="center">
-                            <Image
+                            <CloudinaryImage
                                 src={page.featured_image}
                                 alt={page.title}
                                 width={800}

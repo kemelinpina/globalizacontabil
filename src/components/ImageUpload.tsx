@@ -8,8 +8,8 @@ import {
   useToast,
   Spinner,
 } from '@chakra-ui/react'
-import Image from 'next/image'
 import { FiUpload, FiX, FiEye } from 'react-icons/fi'
+import CloudinaryImage from './CloudinaryImage'
 
 interface ImageUploadProps {
   value?: string
@@ -122,7 +122,7 @@ export default function ImageUpload({
     <VStack spacing={4} align="stretch">
       {preview ? (
         <Box position="relative" borderRadius="md" overflow="hidden">
-          <Image
+          <CloudinaryImage
             src={preview}
             alt="Preview"
             width={400}

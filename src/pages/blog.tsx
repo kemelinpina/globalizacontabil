@@ -26,7 +26,7 @@ import Head from 'next/head'
 import Header from '@/components/Header'
 import Contact from '@/components/Contact'
 import Link from 'next/link'
-import ImageNext from 'next/image'
+import CloudinaryImage from '@/components/CloudinaryImage'
 
 interface Post {
     id: number
@@ -259,13 +259,17 @@ export default function Blog() {
                                                             h={{ base: '200px', md: '150px' }}
                                                             flexShrink={0}
                                                         >
-                                                            <Image
+                                                            <CloudinaryImage
                                                                 src={post.featured_image}
                                                                 alt={post.title}
-                                                                w="100%"
-                                                                h="100%"
-                                                                objectFit="cover"
-                                                                borderRadius="8px"
+                                                                width={200}
+                                                                height={150}
+                                                                style={{
+                                                                    width: '100%',
+                                                                    height: '100%',
+                                                                    objectFit: 'cover',
+                                                                    borderRadius: '8px'
+                                                                }}
                                                             />
                                                         </Box>
                                                     )}

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
-import Image from 'next/image'
 import {
     Box,
     Container,
@@ -18,6 +17,7 @@ import { FiCalendar, FiUser, FiClock } from 'react-icons/fi'
 import { ChevronRightIcon } from '@chakra-ui/icons'
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
+import CloudinaryImage from '../../components/CloudinaryImage'
 
 interface Post {
     id: number
@@ -222,7 +222,7 @@ export default function PostPage() {
                         {/* Featured Image */}
                         {post.featured_image && (
                             <Box mb={8}>
-                                <Image
+                                <CloudinaryImage
                                     src={post.featured_image}
                                     alt={post.title}
                                     width={800}
