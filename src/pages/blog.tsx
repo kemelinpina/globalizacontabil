@@ -19,7 +19,7 @@ import {
     CardBody,
     CardHeader,
 } from '@chakra-ui/react'
-import Image from 'next/image'
+
 import { useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody } from '@chakra-ui/react'
 import { FiSearch, FiCalendar, FiUser, FiEye, FiClock, FiMail } from 'react-icons/fi'
 import Head from 'next/head'
@@ -235,7 +235,7 @@ export default function Blog() {
                                 </Flex>
                             ) : posts.length === 0 ? (
                                 <Box display="flex" flexDirection="column" textAlign="center" py={10} justifyContent="center" alignItems="center">
-                                    <Image src="/empty-post.svg" alt="Nenhum post encontrado" width={200} height={200} />
+                                    <img src="/empty-post.svg" alt="Nenhum post encontrado" style={{ width: '200px', height: '200px' }} />
                                     <Text fontSize="lg" color="primary.500">
                                         Nenhum post encontrado.
                                     </Text>

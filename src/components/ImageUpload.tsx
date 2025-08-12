@@ -9,7 +9,7 @@ import {
   Spinner,
 } from '@chakra-ui/react'
 import { FiUpload, FiX, FiEye } from 'react-icons/fi'
-import Image from 'next/image'
+
 
 
 interface ImageUploadProps {
@@ -123,11 +123,9 @@ export default function ImageUpload({
     <VStack spacing={4} align="stretch">
       {preview ? (
         <Box position="relative" borderRadius="md" overflow="hidden">
-          <Image
+          <img
             src={preview}
             alt="Preview"
-            width={400}
-            height={200}
             style={{
               width: '100%',
               height: '200px',

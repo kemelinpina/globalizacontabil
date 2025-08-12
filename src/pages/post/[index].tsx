@@ -17,7 +17,7 @@ import { FiCalendar, FiUser, FiClock } from 'react-icons/fi'
 import { ChevronRightIcon } from '@chakra-ui/icons'
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
-import Image from 'next/image'
+
 
 interface Post {
     id: number
@@ -222,11 +222,9 @@ export default function PostPage() {
                         {/* Featured Image */}
                         {post.featured_image && (
                             <Box mb={8}>
-                                <Image
+                                <img
                                     src={post.featured_image}
                                     alt={post.title}
-                                    width={800}
-                                    height={400}
                                     style={{
                                         width: '100%',
                                         height: 'auto',

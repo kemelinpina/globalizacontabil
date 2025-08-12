@@ -2,7 +2,7 @@ import { GetServerSideProps } from 'next'
 import { useState, useEffect } from 'react'
 import { Box, Container, Heading, Text, VStack } from '@chakra-ui/react'
 import Head from 'next/head'
-import Image from 'next/image'
+
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
 import { prisma } from '../../lib/prisma'
@@ -133,11 +133,9 @@ export default function PageView({ page, notFound }: PageProps) {
                     {/* Imagem de Destaque */}
                     {page.featured_image && (
                         <Box mb={8} textAlign="center">
-                            <Image
+                            <img
                                 src={page.featured_image}
                                 alt={page.title}
-                                width={800}
-                                height={400}
                                 style={{
                                     width: '100%',
                                     height: 'auto',
