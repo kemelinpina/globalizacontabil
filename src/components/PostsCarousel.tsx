@@ -181,6 +181,9 @@ export default function PostsCarousel({
               backgroundColor='white'
               size='lg'
               fontSize='2xl'
+              position='absolute'
+              bottom={0}
+              right={0}
               borderRadius='4px'
               onClick={() => {
                 if (featuredPost) {

@@ -24,10 +24,10 @@ export default function Footer() {
                             <Link href="/">Contato</Link>
                         </Box>
                         <Box w='25%' display='flex' flexDirection='column' gap={2} color='primary.500'>
-                            <Heading as='h5' fontSize='1xl' fontWeight='bold' color='primary.500'>Links Úteis</Heading>
-                            <Link href="/">Home</Link>
-                            <Link href="/">Sobre</Link>
-                            <Link href="/">Contato</Link>
+                            <Heading as='h5' fontSize='1xl' fontWeight='bold' color='primary.500'>Legal</Heading>
+                            <Link href="/politica-privacidade">Política de Privacidade</Link>
+                            <Link href="/">Termos de Uso</Link>
+                            <Link href="/">Cookies</Link>
                         </Box>
                         <Box w='25%'>
                             <Heading as='h5' fontSize='1xl' fontWeight='bold' color='primary.500'>Redes Sociais</Heading>
