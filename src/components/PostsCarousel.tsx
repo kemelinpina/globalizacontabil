@@ -9,6 +9,7 @@ import {
   Flex,
   Icon,
   Link,
+  useBreakpointValue,
 } from '@chakra-ui/react'
 import { FiCalendar, FiArrowUpRight } from 'react-icons/fi'
 import { FaCaretLeft, FaCaretRight } from 'react-icons/fa'
@@ -109,6 +110,7 @@ export default function PostsCarousel({
       year: 'numeric'
     })
   }
+  const isMobile = useBreakpointValue({ base: true, md: false })
 
   if (isLoading) {
     return (
@@ -129,18 +131,19 @@ export default function PostsCarousel({
 
   return (
     <Box mt={'-60px'} bg="#fafafa">
-      <Container maxW="container.xl" display="flex" gap={4} alignItems='flex-end'>
+      <Container maxW="container.xl" display={isMobile ? 'block' : 'flex'} gap={4} alignItems='flex-end'  mt={isMobile ? 10 : 0}>
         {/* Post Destaque no Carousel */}
         <Box
           id='card-destaque'
           position='relative'
-          w='25%'
+          w={isMobile ? '100%' : '25%'}
           bgImage={'/img-card-destaque.png'}
           bgSize='cover'
           bgPosition='center'
           bgRepeat='no-repeat'
           minH={'357px'}
           borderRadius="4px"
+          mb={isMobile ? 10 : 0}
         >
           <Box w='100%' borderRadius='4px' h="100%" display="flex" flexDirection="column" justifyContent="space-between">
             <Box p={4}>
@@ -194,13 +197,13 @@ export default function PostsCarousel({
             />
           </Box>
         </Box>
-        <Box w='75%' h='100%'>
-          <Flex w='100%' justifyContent='space-between' alignItems='center' gap={4}>
-            <Heading as='h2' fontSize='3xl' fontWeight='bold' textAlign='left' color='primary.500' mb={2} flex={1}>
+        <Box w={isMobile ? '100%' : '75%'} h='100%'>
+          <Flex w='100%' justifyContent='space-between' alignItems='center' gap={4} flexDirection={isMobile ? 'column-reverse' : 'row'}>
+            <Heading as='h2' fontSize={isMobile ? '2xl' : '3xl'} fontWeight='bold' textAlign='left' color='primary.500' mb={2} flex={1}>
               {title}
             </Heading>
             {/* Setas de navegação */}
-            <Flex gap={2} alignItems='center'>
+            <Flex w={isMobile ? '100%' : 'auto'} gap={2} alignItems='center' justifyContent={isMobile ? 'flex-end' : 'flex-end'} mt={isMobile ? 10 : 0}>
               <IconButton
                 aria-label='Voltar'
                 icon={<FaCaretLeft />}
@@ -227,7 +230,7 @@ export default function PostsCarousel({
               </IconButton>
             </Flex>
           </Flex>
-          <Flex w='100%' mt={4} gap={4}>
+          <Flex w='100%' mt={4} gap={4} flexDirection={isMobile ? 'column' : 'row'}>
             {/* Outros posts */}
             {carouselPosts.map((post, index) => (
               <Box key={post.id} p={4} borderRadius='4px' bg='white' flex={1}>

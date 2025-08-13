@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Box, Button, Container, Flex, Heading, Text } from '@chakra-ui/react'
+import { Box, Button, Container, Flex, Heading, Text, useBreakpointValue } from '@chakra-ui/react'
 import { FaWhatsapp } from 'react-icons/fa'
 import Link from 'next/link'
 
@@ -17,6 +17,7 @@ interface BannerWhatsAppData {
 export default function BannerWhatsApp() {
     const [bannerData, setBannerData] = useState<BannerWhatsAppData | null>(null)
     const [loading, setLoading] = useState(true)
+    const isMobile = useBreakpointValue({ base: true, md: false })
 
     useEffect(() => {
         const fetchBannerData = async () => {
@@ -58,7 +59,7 @@ export default function BannerWhatsApp() {
                         flexDirection='column' 
                         justifyContent='center'
                     >
-                        <Heading as='h3' fontSize='3xl' fontWeight='bold' color='white'>
+                        <Heading as='h3' fontSize={isMobile ? '2xl' : '3xl'} fontWeight='bold' color='white' textAlign='center'>
                             {bannerData.title}
                         </Heading>
                         
@@ -78,6 +79,7 @@ export default function BannerWhatsApp() {
                             size='lg'
                             borderRadius='4px'
                             fontWeight='bold'
+                            w={isMobile ? '100%' : 'auto'}
                             _hover={{
                                 backgroundColor: 'whatsapp.600',
                                 textDecoration: 'none',

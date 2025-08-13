@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Box, Button, Container, Flex, Heading, Icon, Link, Text, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody } from '@chakra-ui/react'
+import { Box, Button, Container, Flex, Heading, Icon, Link, Text, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, useBreakpointValue } from '@chakra-ui/react'
 
 import { TbMailShare } from 'react-icons/tb'
 import Contact from '@/components/Contact'
@@ -19,6 +19,7 @@ export default function SectionSobre() {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [aboutData, setAboutData] = useState<HomeAboutData | null>(null)
     const [loading, setLoading] = useState(true)
+    const isMobile = useBreakpointValue({ base: true, md: false })
 
     useEffect(() => {
         const fetchAboutData = async () => {
@@ -43,9 +44,9 @@ export default function SectionSobre() {
 
     return (
         <Box mt={10} borderRadius='4px'>
-            <Container minH='529px' display='flex' alignItems='center' maxW="container.xl" bg='transparent linear-gradient(114deg, #FFFFFF 0%, #FFFFFF 34%, #EBF6FF 56%, #FFFFFF 74%, #FFFFFF 100%) 0% 0% no-repeat padding-box;'>
-                <Flex alignItems='center' p={6} gap={5}>
-                    <Box w='50%'>
+            <Container minH='529px' display={isMobile ? 'block' : 'flex'} alignItems='center' maxW="container.xl" bg='transparent linear-gradient(114deg, #FFFFFF 0%, #FFFFFF 34%, #EBF6FF 56%, #FFFFFF 74%, #FFFFFF 100%) 0% 0% no-repeat padding-box;'>
+                <Flex alignItems='center' p={6} gap={5} flexDirection={isMobile ? 'column-reverse' : 'row'}>
+                    <Box w={isMobile ? '100%' : '50%'}>
                         <Heading as='h2' fontSize='3xl' fontWeight='bold' color='red.500' mb={2}>
                             {aboutData.title}
                         </Heading>
@@ -91,7 +92,7 @@ export default function SectionSobre() {
                             )}
                         </Flex>
                     </Box>
-                    <Box w='50%' position='relative'>
+                    <Box w={isMobile ? '100%' : '50%'} position='relative'>
                         <Box w='100%' borderRadius='4px' overflow='hidden'>
                             <img 
                                 src={aboutData.photo || '/andre-paravela-globaliza-contabil-colorida.png'} 
@@ -100,12 +101,11 @@ export default function SectionSobre() {
                                     width: '100%',
                                     height: 'auto',
                                     maxWidth: '600px',
-                                    maxHeight: '600px'
                                 }}
                             />
                         </Box>
-                        <Box position='absolute' top={'10%'} right={'-12%'} boxSize={40} bg='linear-gradient(114deg, #8fc2fd 0%, #235da0 34%, #0d335e 74%)' borderRadius='4px' zIndex={1}></Box>
-                        <Box position='absolute' bottom={'5%'} left={'-12%'} boxSize={40} bg='linear-gradient(114deg, #0d335e  56%, #235da0 74%, #8fc2fd 100%)' borderRadius='4px' zIndex={1}></Box>
+                        <Box display={isMobile ? 'none' : 'block'} position='absolute' top={'10%'} right={'-12%'} boxSize={40} bg='linear-gradient(114deg, #8fc2fd 0%, #235da0 34%, #0d335e 74%)' borderRadius='4px' zIndex={1}></Box>
+                        <Box display={isMobile ? 'none' : 'block'} position='absolute' bottom={'5%'} left={'-12%'} boxSize={40} bg='linear-gradient(114deg, #0d335e  56%, #235da0 74%, #8fc2fd 100%)' borderRadius='4px' zIndex={1}></Box>
                     </Box>
                 </Flex>
             </Container>

@@ -1,7 +1,8 @@
-// src\components\DynamicMenu.tsx
+// src/components/DynamicMenuMobile.tsx
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { Skeleton, VStack, Box } from '@chakra-ui/react'
 
 interface MenuItem {
   id: number
@@ -21,12 +22,12 @@ interface Menu {
   menu_items: MenuItem[]
 }
 
-interface DynamicMenuProps {
+interface DynamicMenuMobileProps {
   location: string
   className?: string
 }
 
-export default function DynamicMenu({ location, className = '' }: DynamicMenuProps) {
+export default function DynamicMenuMobile({ location, className = '' }: DynamicMenuMobileProps) {
   const [menu, setMenu] = useState<Menu | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
@@ -82,7 +83,18 @@ export default function DynamicMenu({ location, className = '' }: DynamicMenuPro
   }
 
   if (loading) {
-    return <div className={`menu-loading ${className}`}>Carregando...</div>
+    return (
+      <nav className={`dynamic-menu-mobile ${className}`}>
+        <VStack spacing={3} align="stretch" w="full">
+          {/* Skeleton para 4 itens de menu */}
+          {[1, 2, 3, 4].map((item) => (
+            <Box key={item}>
+              <Skeleton height="20px" width="100%" />
+            </Box>
+          ))}
+        </VStack>
+      </nav>
+    )
   }
 
   if (!menu || !menu.menu_items || menu.menu_items.length === 0) {
@@ -90,11 +102,10 @@ export default function DynamicMenu({ location, className = '' }: DynamicMenuPro
   }
 
   return (
-    <nav className={`dynamic-menu ${className}`}>
+    <nav className={`dynamic-menu-mobile ${className}`}>
       <ul className="menu-list">
         {menu.menu_items.map(renderMenuItem)}
       </ul>
     </nav>
   )
 }
-

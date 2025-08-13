@@ -8,10 +8,12 @@ import {
   VStack,
   HStack,
   Link,
+  useBreakpointValue,
 } from '@chakra-ui/react'
 import DynamicContacts from './DynamicContacts'
 
 export default function HeroSection () {
+  const isMobile = useBreakpointValue({ base: true, md: false })
   return (
     <>
       <Box
@@ -88,7 +90,7 @@ export default function HeroSection () {
             </VStack>
 
             {/* CTA and Social Buttons */}
-            <HStack spacing={6} justify="center">
+            <HStack spacing={6} justify="center" display={isMobile ? 'block' : 'flex'}>
               <Button
                 colorScheme="primary"
                 size="lg"
@@ -96,6 +98,7 @@ export default function HeroSection () {
                 py={4}
                 fontSize="lg"
                 fontWeight="semibold"
+                mb={isMobile ? 4 : 0}
                 _hover={{
                   transform: 'translateY(-10px)',
                   shadow: 'lg',

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Box, Heading, Text, Link, Container, Flex, Badge, Icon } from '@chakra-ui/react'
+import { Box, Heading, Text, Link, Container, Flex, Badge, Icon, useBreakpointValue } from '@chakra-ui/react'
 import { FiCalendar } from 'react-icons/fi'
 import dayjs from 'dayjs'
 
@@ -28,6 +28,7 @@ interface Post {
 export default function PostDestaque() {
   const [featuredPost, setFeaturedPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(true)
+  const isMobile = useBreakpointValue({ base: true, md: false })
 
   useEffect(() => {
     const fetchFeaturedPost = async () => {
@@ -56,11 +57,11 @@ export default function PostDestaque() {
   return (
     <>
       <Box bg="#fafafa" mt={'60px'}>
-        <Container maxW="container.xl" display="flex" borderRadius='4px' bg='white' p={4}>
+        <Container maxW="container.xl" display={isMobile ? 'block' : 'flex'} borderRadius='4px' bg='white' p={4}>
           <Box 
-            w='25%' 
+            w={isMobile ? '100%' : '25%'} 
             h='100%' 
-            boxSize={'25%'} 
+            boxSize={isMobile ? '100%' : '25%'} 
             minH={'357px'} 
             bgImage={featuredPost.featured_image || '/default.png'} 
             bgSize='cover' 
@@ -68,7 +69,7 @@ export default function PostDestaque() {
             bgRepeat='no-repeat'
           >
           </Box>
-          <Box w='75%' h='100%' p={4}>
+          <Box w={isMobile ? '100%' : '75%'} h='100%' p={4}>
             <Heading as='h3' fontSize='2xl' fontWeight='600' textAlign='left' color='red.500' mb={2}>
               {featuredPost.title}
             </Heading>

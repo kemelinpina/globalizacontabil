@@ -11,6 +11,7 @@ import {
   Input,
   Textarea,
   useToast,
+  useBreakpointValue,
 } from '@chakra-ui/react'
 
 type ContactFormData = {
@@ -41,6 +42,7 @@ export default function Contact({ onSuccess, isCompact = false }: ContactProps) 
   const [submitting, setSubmitting] = useState(false)
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const toast = useToast()
+  const isMobile = useBreakpointValue({ base: true, md: false })
 
   const formatPhoneBR = (value: string): string => {
     const digits = value.replace(/\D/g, '').slice(0, 11)
@@ -97,7 +99,7 @@ export default function Contact({ onSuccess, isCompact = false }: ContactProps) 
   }
 
   const form = (
-    <Box as="form" onSubmit={handleSubmit} bg="white" p={6} borderRadius="4px" boxShadow="sm" color="primary.500">
+    <Box as="form" onSubmit={handleSubmit} bg="white" p={isMobile ? 0 : 6} borderRadius="4px" boxShadow="sm" color="primary.500">
           <Flex gap={4} direction={{ base: 'column', md: 'column' }}>
             <FormControl isInvalid={!!errors.name} isRequired>
               <FormLabel>Nome</FormLabel>
