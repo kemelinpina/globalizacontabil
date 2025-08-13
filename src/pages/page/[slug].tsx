@@ -6,6 +6,7 @@ import Head from 'next/head'
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
 import { prisma } from '../../lib/prisma'
+import { processSitemapShortcodesBackend } from '@/utils/shortcodeProcessor'
 
 
 interface Page {
@@ -209,6 +210,25 @@ export default function PageView({ page, notFound }: PageProps) {
                                 borderRadius: '4px',
                                 fontSize: 'sm',
                             },
+                            // Estilos para o sitemap renderizado
+                            '.sitemap-shortcode': {
+                                margin: '2rem 0',
+                                padding: '1rem',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '8px',
+                                backgroundColor: '#f7fafc'
+                            },
+                            '.sitemap-shortcode a:hover': {
+                                textDecoration: 'underline'
+                            },
+                            '.sitemap-shortcode .category-header:hover': {
+                                backgroundColor: '#edf2f7'
+                            },
+                            '.sitemap-shortcode .category-posts a:hover': {
+                                backgroundColor: '#f7fafc',
+                                padding: '0.25rem 0.5rem',
+                                borderRadius: '4px'
+                            }
                         }}
                     />
                 </Container>
@@ -258,9 +278,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             data: { view_count: { increment: 1 } }
         })
 
+        // Processar shortcodes no backend
+        let processedContent = page.content
+        if (page.content && page.content.includes('[sitemap]')) {
+            processedContent = await processSitemapShortcodesBackend(page.content)
+        }
+
         // Serializar datas para JSON
         const serializedPage = {
             ...page,
+            content: processedContent,
             created_at: page.created_at.toISOString(),
             updated_at: page.updated_at.toISOString(),
             published_at: page.published_at?.toISOString() || null,

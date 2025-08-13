@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Box, Text, Button, VStack, HStack, Link, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, ModalFooter } from '@chakra-ui/react'
+import { Box, Text, Button, VStack, HStack, Link, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useBreakpoint, useBreakpointValue } from '@chakra-ui/react'
 import NextLink from 'next/link'
 
 interface CookieConsentProps {
@@ -20,6 +20,8 @@ export default function CookieConsent({
   const [isVisible, setIsVisible] = useState(false)
   const [hasConsented, setHasConsented] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const isMobile = useBreakpointValue({ base: true, md: false });
+  
 
   useEffect(() => {
     // Verificar se o usuário já consentiu
@@ -66,7 +68,7 @@ export default function CookieConsent({
           position="fixed"
           bottom="20px"
           left="20px"
-          maxW="400px"
+          maxW={isMobile ? '90%' : '400px'}
           bg="white"
           border="1px solid"
           borderColor="gray.200"

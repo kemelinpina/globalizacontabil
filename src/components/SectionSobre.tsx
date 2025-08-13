@@ -3,6 +3,7 @@ import { Box, Button, Container, Flex, Heading, Icon, Link, Text, useDisclosure,
 
 import { TbMailShare } from 'react-icons/tb'
 import Contact from '@/components/Contact'
+import { PageContent } from '@/components/ContentWithShortcodes'
 
 interface HomeAboutData {
   id: number
@@ -48,23 +49,9 @@ export default function SectionSobre() {
                         <Heading as='h2' fontSize='3xl' fontWeight='bold' color='red.500' mb={2}>
                             {aboutData.title}
                         </Heading>
-                        <Box 
-                            color='primary.500' 
-                            mb={3}
-                            dangerouslySetInnerHTML={{ __html: aboutData.content }}
-                            sx={{
-                                '& a': {
-                                    color: 'red.500',
-                                    fontWeight: 'bold',
-                                    textDecoration: 'none',
-                                    '&:hover': {
-                                        textDecoration: 'none'
-                                    }
-                                },
-                                '& p': {
-                                    marginBottom: '12px'
-                                }
-                            }}
+                        <PageContent 
+                            content={aboutData.content}
+                            className="about-content"
                         />
                         <Flex gap={2}>
                             <Button

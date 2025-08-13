@@ -17,6 +17,7 @@ import { FiCalendar, FiUser, FiClock } from 'react-icons/fi'
 import { ChevronRightIcon } from '@chakra-ui/icons'
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
+import { processSitemapShortcodesBackend } from '@/utils/shortcodeProcessor'
 
 
 interface Post {
@@ -60,14 +61,28 @@ export default function PostPage() {
                 const data = await response.json()
 
                 if (data.posts && data.posts.length > 0) {
-                    setPost(data.posts[0])
+                    const post = data.posts[0]
+                    // Processar shortcodes no frontend
+                    if (post.content && post.content.includes('[sitemap]')) {
+                        const processedContent = await processSitemapShortcodesBackend(post.content)
+                        setPost({ ...post, content: processedContent })
+                    } else {
+                        setPost(post)
+                    }
                 } else {
                     // Se não encontrar por slug, tentar por ID
                     const idResponse = await fetch(`/api/pg/posts/${index}`)
                     const idData = await idResponse.json()
 
                     if (idData.post && idData.post.status === 'published') {
-                        setPost(idData.post)
+                        const post = idData.post
+                        // Processar shortcodes no frontend
+                        if (post.content && post.content.includes('[sitemap]')) {
+                            const processedContent = await processSitemapShortcodesBackend(post.content)
+                            setPost({ ...post, content: processedContent })
+                        } else {
+                            setPost(post)
+                        }
                     } else {
                         router.push('/404')
                     }
@@ -299,6 +314,25 @@ export default function PostPage() {
                                 '& th': {
                                     bg: 'gray.50',
                                     fontWeight: 'bold'
+                                },
+                                // Estilos para o sitemap renderizado
+                                '.sitemap-shortcode': {
+                                    margin: '2rem 0',
+                                    padding: '1rem',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: '8px',
+                                    backgroundColor: '#f7fafc'
+                                },
+                                '.sitemap-shortcode a:hover': {
+                                    textDecoration: 'underline'
+                                },
+                                '.sitemap-shortcode .category-header:hover': {
+                                    backgroundColor: '#edf2f7'
+                                },
+                                '.sitemap-shortcode .category-posts a:hover': {
+                                    backgroundColor: '#f7fafc',
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '4px'
                                 }
                             }}
                         />

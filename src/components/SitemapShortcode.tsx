@@ -1,3 +1,4 @@
+// src\components\SitemapShortcode.tsx
 import React, { useEffect, useRef } from 'react'
 import { Box, Container, Heading, Text, Link, VStack, SimpleGrid, Divider, Spinner, Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon } from '@chakra-ui/react'
 import NextLink from 'next/link'
@@ -110,14 +111,7 @@ export default function SitemapShortcode({ showTitle = true, className = '' }: S
   return (
     <Box className={className}>
       {showTitle && (
-        <Box textAlign="center" mb={8}>
-          <Heading as="h1" size="xl" color="primary.500" mb={4}>
-            Mapa do Site
-          </Heading>
-          <Text color="gray.600" fontSize="lg">
-            Navegue por todas as páginas e conteúdos do nosso site
-          </Text>
-        </Box>
+        <></>
       )}
 
       <Container maxW="container.xl" px={4}>
@@ -282,14 +276,7 @@ function generateSitemapHTML(options: { showTitle?: boolean; className?: string 
   
   let html = '<div class="sitemap-shortcode ' + className + '">'
   
-  if (showTitle) {
-    html += `
-      <div class="sitemap-header" style="text-align: center; margin-bottom: 2rem;">
-        <h1 style="color: #013F71; font-size: 2rem; margin-bottom: 1rem;">Mapa do Site</h1>
-        <p style="color: #666; font-size: 1.1rem;">Navegue por todas as páginas e conteúdos do nosso site</p>
-      </div>
-    `
-  }
+  
   
   html += `
     <div class="sitemap-container" style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
@@ -339,93 +326,110 @@ function generateSitemapHTML(options: { showTitle?: boolean; className?: string 
   // Adicionar script para carregar dados dinamicamente
   html += `
     <script>
-      (function() {
+      (async function() {
+        // Função para carregar dados do sitemap
+        async function loadSitemapData(container) {
+          try {
+            console.log('🔄 Carregando dados do sitemap...');
+            
+            // Buscar categorias
+            const categoriesResponse = await fetch('/api/pg/categories?is_active=true');
+            const categoriesData = await categoriesResponse.json();
+            console.log('📂 Categorias carregadas:', categoriesData);
+            
+            // Buscar posts
+            const postsResponse = await fetch('/api/pg/posts?status=published&limit=1000');
+            const postsData = await postsResponse.json();
+            console.log('📝 Posts carregados:', postsData);
+            
+            // Buscar páginas
+            const pagesResponse = await fetch('/api/pg/pages?status=published&limit=1000');
+            const pagesData = await pagesResponse.json();
+            console.log('📄 Páginas carregadas:', pagesData);
+            
+            // Atualizar categorias
+            const categoriesList = container.querySelector('.categories-list');
+            if (categoriesList && categoriesData.categories) {
+              const categoriesHtml = categoriesData.categories.map(cat => 
+                '<a href="/blog?category=' + cat.id + '" style="color: #013F71; text-decoration: none; display: block; margin-bottom: 0.5rem;">' + cat.name + '</a>'
+              ).join('');
+              categoriesList.innerHTML = categoriesHtml;
+              console.log('✅ Categorias atualizadas');
+            }
+            
+            // Atualizar posts recentes
+            const postsList = container.querySelector('.posts-list');
+            if (postsList && postsData.posts) {
+              const postsHtml = postsData.posts.slice(0, 10).map(post => 
+                '<a href="/post/' + post.slug + '" style="color: #013F71; text-decoration: none; display: block; margin-bottom: 0.5rem;">' + post.title + '</a>'
+              ).join('');
+              postsList.innerHTML = postsHtml;
+              console.log('✅ Posts recentes atualizados');
+            }
+            
+            // Atualizar posts por categoria
+            const categoriesAccordion = container.querySelector('.categories-accordion');
+            if (categoriesAccordion && categoriesData.categories && postsData.posts) {
+              let accordionHtml = '';
+              categoriesData.categories.forEach(category => {
+                const categoryPosts = postsData.posts.filter(post => post.category && post.category.name === category.name);
+                if (categoryPosts.length > 0) {
+                  accordionHtml += \`
+                    <div class="category-item" style="margin-bottom: 1rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
+                      <button class="category-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'" 
+                              style="width: 100%; padding: 1rem; background: #f7fafc; border: none; text-align: left; cursor: pointer; border-radius: 0.5rem 0.5rem 0 0;">
+                        <span style="font-weight: bold; color: #013F71;">\${category.name} (\${categoryPosts.length})</span>
+                        <span style="float: right;">▼</span>
+                      </button>
+                      <div class="category-posts" style="display: none; padding: 1rem; background: white;">
+                        \${categoryPosts.map(post => 
+                          '<a href="/post/' + post.slug + '" style="display: block; color: #013F71; text-decoration: none; padding: 0.25rem 0;">' + post.title + '</a>'
+                        ).join('')}
+                      </div>
+                    </div>
+                  \`;
+                }
+              });
+              categoriesAccordion.innerHTML = accordionHtml;
+              console.log('✅ Posts por categoria atualizados');
+            }
+            
+            // Adicionar páginas dinâmicas se existirem
+            if (pagesData.pages && pagesData.pages.length > 0) {
+              const pagesSection = container.querySelector('.sitemap-section');
+              if (pagesSection) {
+                const pagesList = pagesSection.querySelector('div');
+                if (pagesList) {
+                  pagesData.pages.forEach(page => {
+                    const pageLink = document.createElement('a');
+                    pageLink.href = '/page/' + page.slug;
+                    pageLink.style.cssText = 'color: #013F71; text-decoration: none; display: block; margin-bottom: 0.5rem;';
+                    pageLink.textContent = page.title;
+                    pagesList.appendChild(pageLink);
+                  });
+                  console.log('✅ Páginas dinâmicas adicionadas');
+                }
+              }
+            }
+            
+            console.log('🎉 Sitemap carregado com sucesso!');
+            
+          } catch (error) {
+            console.error('❌ Erro ao carregar dados do sitemap:', error);
+          }
+        }
+        
+        // Executar a função
         const container = document.querySelector('.sitemap-shortcode:last-child');
         if (container) {
-          loadSitemapData(container);
+          console.log('🔍 Container do sitemap encontrado, iniciando carregamento...');
+          await loadSitemapData(container);
+        } else {
+          console.error('❌ Container do sitemap não encontrado');
         }
       })();
     </script>
   `
   
   return html
-}
-
-// Função para carregar dados do sitemap
-async function loadSitemapData(container: Element) {
-  try {
-    // Buscar categorias
-    const categoriesResponse = await fetch('/api/pg/categories?is_active=true')
-    const categoriesData = await categoriesResponse.json()
-    
-    // Buscar posts
-    const postsResponse = await fetch('/api/pg/posts?status=published&limit=1000')
-    const postsData = await postsResponse.json()
-    
-    // Buscar páginas
-    const pagesResponse = await fetch('/api/pg/pages?status=published&limit=1000')
-    const pagesData = await pagesResponse.json()
-    
-    // Atualizar categorias
-    const categoriesList = container.querySelector('.categories-list')
-    if (categoriesList && categoriesData.categories) {
-      categoriesList.innerHTML = categoriesData.categories.map((cat: any) => 
-        `<a href="/blog?category=${cat.id}" style="color: #013F71; text-decoration: none;">${cat.name}</a>`
-      ).join('')
-    }
-    
-    // Atualizar posts recentes
-    const postsList = container.querySelector('.posts-list')
-    if (postsList && postsData.posts) {
-      postsList.innerHTML = postsData.posts.slice(0, 10).map((post: any) => 
-        `<a href="/post/${post.slug}" style="color: #013F71; text-decoration: none;">${post.title}</a>`
-      ).join('')
-    }
-    
-    // Atualizar posts por categoria
-    const categoriesAccordion = container.querySelector('.categories-accordion')
-    if (categoriesAccordion && categoriesData.categories && postsData.posts) {
-      let accordionHtml = ''
-      categoriesData.categories.forEach((category: any) => {
-        const categoryPosts = postsData.posts.filter((post: any) => post.category?.name === category.name)
-        if (categoryPosts.length > 0) {
-          accordionHtml += `
-            <div class="category-item" style="margin-bottom: 1rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
-              <button class="category-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'" 
-                      style="width: 100%; padding: 1rem; background: #f7fafc; border: none; text-align: left; cursor: pointer; border-radius: 0.5rem 0.5rem 0 0;">
-                <span style="font-weight: bold; color: #013F71;">${category.name} (${categoryPosts.length})</span>
-                <span style="float: right;">▼</span>
-              </button>
-              <div class="category-posts" style="display: none; padding: 1rem; background: white;">
-                ${categoryPosts.map((post: any) => 
-                  `<a href="/post/${post.slug}" style="display: block; color: #013F71; text-decoration: none; padding: 0.25rem 0;">${post.title}</a>`
-                ).join('')}
-              </div>
-            </div>
-          `
-        }
-      })
-      categoriesAccordion.innerHTML = accordionHtml
-    }
-    
-    // Adicionar páginas dinâmicas se existirem
-    if (pagesData.pages && pagesData.pages.length > 0) {
-      const pagesSection = container.querySelector('.sitemap-section')
-      if (pagesSection) {
-        const pagesList = pagesSection.querySelector('div')
-        if (pagesList) {
-          pagesData.pages.forEach((page: any) => {
-            const pageLink = document.createElement('a')
-            pageLink.href = `/page/${page.slug}`
-            pageLink.style.cssText = 'color: #013F71; text-decoration: none;'
-            pageLink.textContent = page.title
-            pagesList.appendChild(pageLink)
-          })
-        }
-      }
-    }
-    
-  } catch (error) {
-    console.error('❌ Erro ao carregar dados do sitemap:', error)
-  }
 }
