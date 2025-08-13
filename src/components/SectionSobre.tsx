@@ -61,6 +61,7 @@ export default function SectionSobre() {
                                 size='md'
                                 borderRadius='4px'
                                 mt={2}
+                                w={isMobile ? '100%' : 'auto'}
                                 rightIcon={<Icon as={TbMailShare} />}
                                 onClick={onOpen}
                                 _hover={{

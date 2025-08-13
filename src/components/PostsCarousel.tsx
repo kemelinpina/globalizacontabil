@@ -10,6 +10,8 @@ import {
   Icon,
   Link,
   useBreakpointValue,
+  Skeleton,
+  VStack,
 } from '@chakra-ui/react'
 import { FiCalendar, FiArrowUpRight } from 'react-icons/fi'
 import { FaCaretLeft, FaCaretRight } from 'react-icons/fa'
@@ -49,21 +51,21 @@ export default function PostsCarousel({
     const fetchPosts = async () => {
       try {
         setIsLoading(true)
-        
+
         console.log('🔍 Buscando posts...')
-        
+
         // Buscar todos os posts publicados
         const response = await fetch('/api/pg/posts?status=published&limit=20')
         const data = await response.json()
-        
+
         console.log('📊 Posts encontrados:', data)
-        
+
         const publishedPosts = data.posts || []
-        
+
         if (publishedPosts.length > 0) {
           console.log('✅ Posts carregados:', publishedPosts.length)
           setPosts(publishedPosts)
-          
+
           // Definir o primeiro post como destaque
           setFeaturedPost(publishedPosts[0])
         } else {
@@ -116,7 +118,14 @@ export default function PostsCarousel({
     return (
       <Box py={16} bg="#fafafa">
         <Container maxW="container.xl">
-          <Text>Carregando posts...</Text>
+          <VStack spacing={3} align="stretch" w="full">
+            {/* Skeleton para 4 itens de menu */}
+            {[1, 2, 3, 4].map((item) => (
+              <Box key={item}>
+                <Skeleton height="20px" width="100%" />
+              </Box>
+            ))}
+          </VStack>
         </Container>
       </Box>
     )
@@ -131,7 +140,7 @@ export default function PostsCarousel({
 
   return (
     <Box mt={'-60px'} bg="#fafafa">
-      <Container maxW="container.xl" display={isMobile ? 'block' : 'flex'} gap={4} alignItems='flex-end'  mt={isMobile ? 10 : 0}>
+      <Container maxW="container.xl" display={isMobile ? 'block' : 'flex'} gap={4} alignItems='flex-end' mt={isMobile ? 10 : 0}>
         {/* Post Destaque no Carousel */}
         <Box
           id='card-destaque'
@@ -240,19 +249,19 @@ export default function PostsCarousel({
                 <Text mb={4} color='primary.500' noOfLines={3}>
                   {post.excerpt}
                 </Text>
-                <Link 
-                  href={`/post/${post.slug}`} 
-                  color='red.500' 
-                  fontWeight='bold' 
-                  fontSize='12px' 
-                  mt={4} 
+                <Link
+                  href={`/post/${post.slug}`}
+                  color='red.500'
+                  fontWeight='bold'
+                  fontSize='12px'
+                  mt={4}
                   _hover={{ textDecoration: 'none' }}
                 >
                   Continue lendo
                 </Link>
               </Box>
             ))}
-            
+
             {/* Preencher espaços vazios se não houver posts suficientes */}
             {carouselPosts.length < 3 && Array.from({ length: 3 - carouselPosts.length }).map((_, index) => (
               <Box key={`empty-${index}`} p={4} borderRadius='4px' bg='white' flex={1} opacity={0.5}>
