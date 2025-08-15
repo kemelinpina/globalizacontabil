@@ -8,6 +8,7 @@ import { prisma } from '../../../lib/prisma';
 const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
+      // Pasta externa no servidor (fora do projeto)
       const basePath = '/var/www/html/uploads_globaliza';
       
       // Cria pasta principal se não existir
