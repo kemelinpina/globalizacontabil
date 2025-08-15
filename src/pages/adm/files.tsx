@@ -8,16 +8,17 @@ import {
   Tag,
   Input,
   Tooltip,
+  Upload,
 } from 'antd'
 import {
   DeleteOutlined,
   EyeOutlined,
   LinkOutlined,
   SearchOutlined,
+  UploadOutlined,
 } from '@ant-design/icons'
 
 import AdminLayout from '../../components/AdminLayout'
-import FileUpload from '../../components/ImageUpload'
 import Head from 'next/head'
 
 interface FileItem {
@@ -35,6 +36,7 @@ export default function FilesPage() {
   const [filteredFiles, setFilteredFiles] = useState<FileItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchText, setSearchText] = useState('')
+  const [uploading, setUploading] = useState(false)
 
   const fetchFiles = useCallback(async () => {
     try {
@@ -86,7 +88,57 @@ export default function FilesPage() {
     }
   }
 
+  const handleUpload = async (file: File) => {
+    setUploading(true)
+    
+    try {
+      const formData = new FormData()
+      formData.append('files', file)
 
+      const response = await fetch('/api/arquivos/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro no upload: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.success) {
+        message.success('Arquivo enviado com sucesso')
+        fetchFiles()
+      } else {
+        throw new Error(result.error || 'Erro desconhecido no upload')
+      }
+
+    } catch (error) {
+      console.error('Erro no upload:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+      message.error(`Erro no upload: ${errorMessage}`)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const uploadProps = {
+    name: 'file',
+    multiple: false,
+    showUploadList: false,
+    beforeUpload: (file: File) => {
+      // Validação de tamanho (100MB)
+      const isLt100M = file.size / 1024 / 1024 < 100
+      if (!isLt100M) {
+        message.error('Arquivo deve ter menos de 100MB!')
+        return false
+      }
+      
+      // Upload customizado
+      handleUpload(file)
+      return false // Previne upload automático
+    },
+  }
 
   const handleCopyLink = async (url: string) => {
     try {
@@ -256,18 +308,15 @@ export default function FilesPage() {
                 style={{ width: '300px' }}
                 allowClear
               />
-              <FileUpload
-                onUploadSuccess={() => {
-                  message.success('Arquivo enviado com sucesso')
-                  fetchFiles()
-                }}
-                onUploadError={(error) => {
-                  message.error(error)
-                }}
-                accept="*/*"
-                maxSize={100}
-                showPreview={false}
-              />
+              <Upload {...uploadProps}>
+                <Button 
+                  icon={<UploadOutlined />} 
+                  loading={uploading}
+                  type="primary"
+                >
+                  Enviar Arquivo
+                </Button>
+              </Upload>
             </div>
           </div>
 
@@ -291,8 +340,6 @@ export default function FilesPage() {
             />
           </div>
         </div>
-
-
       </AdminLayout>
     </>
   )

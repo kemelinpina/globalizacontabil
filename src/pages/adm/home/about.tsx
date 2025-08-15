@@ -9,13 +9,16 @@ import {
   Space,
   Typography,
   Divider,
+  Upload,
+  Image,
 } from 'antd'
 import {
   SaveOutlined,
+  UploadOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons'
 import AdminLayout from '../../../components/AdminLayout'
 import Head from 'next/head'
-import ImageUpload from '../../../components/ImageUpload'
 import dynamic from 'next/dynamic'
 
 // Importar CKEditor dinamicamente para evitar problemas de SSR
@@ -42,6 +45,8 @@ export default function HomeAboutPage() {
   const [saving, setSaving] = useState(false)
   const [homeAboutData, setHomeAboutData] = useState<HomeAboutData | null>(null)
   const [editorContent, setEditorContent] = useState('')
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const [fileUploading, setFileUploading] = useState(false)
 
   const fetchHomeAbout = async () => {
     try {
@@ -122,15 +127,123 @@ export default function HomeAboutPage() {
     }
   }
 
-  const handlePhotoUpload = (url: string) => {
-    form.setFieldsValue({ photo: url })
-    message.success('Foto carregada com sucesso')
+  const handlePhotoUpload = async (file: File) => {
+    setPhotoUploading(true)
+    
+    try {
+      const formData = new FormData()
+      formData.append('files', file)
+
+      const response = await fetch('/api/arquivos/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro no upload: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.success) {
+        const photoUrl = result.files[0].url
+        form.setFieldsValue({ photo: photoUrl })
+        setHomeAboutData(prev => prev ? { ...prev, photo: photoUrl } : null)
+        message.success('Foto carregada com sucesso')
+      } else {
+        throw new Error(result.error || 'Erro desconhecido no upload')
+      }
+
+    } catch (error) {
+      console.error('Erro no upload da foto:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+      message.error(`Erro no upload: ${errorMessage}`)
+    } finally {
+      setPhotoUploading(false)
+    }
   }
 
-  const handleFileUpload = (url: string) => {
-    form.setFieldsValue({ download_file: url })
-    message.success('Arquivo carregado com sucesso')
+  const handleFileUpload = async (file: File) => {
+    setFileUploading(true)
+    
+    try {
+      const formData = new FormData()
+      formData.append('files', file)
+
+      const response = await fetch('/api/arquivos/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro no upload: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.success) {
+        const fileUrl = result.files[0].url
+        form.setFieldsValue({ download_file: fileUrl })
+        setHomeAboutData(prev => prev ? { ...prev, download_file: fileUrl } : null)
+        message.success('Arquivo carregado com sucesso')
+      } else {
+        throw new Error(result.error || 'Erro desconhecido no upload')
+      }
+
+    } catch (error) {
+      console.error('Erro no upload do arquivo:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+      message.error(`Erro no upload: ${errorMessage}`)
+    } finally {
+      setFileUploading(false)
+    }
   }
+
+  const photoUploadProps = {
+    name: 'photo',
+    multiple: false,
+    showUploadList: false,
+    beforeUpload: (file: File) => {
+      // Validação de tipo
+      const isImage = file.type.startsWith('image/')
+      if (!isImage) {
+        message.error('Você só pode fazer upload de arquivos de imagem!')
+        return false
+      }
+      
+      // Validação de tamanho (10MB para imagens)
+      const isLt10M = file.size / 1024 / 1024 < 10
+      if (!isLt10M) {
+        message.error('Imagem deve ter menos de 10MB!')
+        return false
+      }
+      
+      // Upload customizado
+      handlePhotoUpload(file)
+      return false // Previne upload automático
+    },
+  }
+
+  const fileUploadProps = {
+    name: 'file',
+    multiple: false,
+    showUploadList: false,
+    beforeUpload: (file: File) => {
+      // Validação de tamanho (100MB para arquivos)
+      const isLt100M = file.size / 1024 / 1024 < 100
+      if (!isLt100M) {
+        message.error('Arquivo deve ter menos de 100MB!')
+        return false
+      }
+      
+      // Upload customizado
+      handleFileUpload(file)
+      return false // Previne upload automático
+    },
+  }
+
+  const currentPhoto = form.getFieldValue('photo')
+  const currentFile = form.getFieldValue('download_file')
 
   return (
     <>
@@ -194,11 +307,38 @@ export default function HomeAboutPage() {
               </Text>
 
               <Form.Item name="photo">
-                <ImageUpload
-                  onUploadSuccess={handlePhotoUpload}
-                  onUploadError={(error) => message.error(`Erro no upload: ${error}`)}
-                  value={form.getFieldValue('photo')}
-                />
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <Upload {...photoUploadProps}>
+                    <Button 
+                      icon={<UploadOutlined />} 
+                      loading={photoUploading}
+                      type="primary"
+                    >
+                      {currentPhoto ? 'Alterar Foto' : 'Carregar Foto'}
+                    </Button>
+                  </Upload>
+                  
+                  {currentPhoto && (
+                    <>
+                      <Button
+                        icon={<DeleteOutlined />}
+                        onClick={() => {
+                          form.setFieldsValue({ photo: undefined })
+                          setHomeAboutData(prev => prev ? { ...prev, photo: undefined } : null)
+                        }}
+                      >
+                        Remover
+                      </Button>
+                      <Image
+                        src={currentPhoto}
+                        alt="Foto atual"
+                        width={100}
+                        height={100}
+                        style={{ objectFit: 'cover', borderRadius: '8px' }}
+                      />
+                    </>
+                  )}
+                </div>
               </Form.Item>
 
               <Divider />
@@ -222,11 +362,37 @@ export default function HomeAboutPage() {
                 <Text type="secondary" style={{ display: 'block', marginBottom: '16px' }}>
                   Carregue um arquivo (PDF, DOC, etc.) que será baixado quando o usuário clicar no botão.
                 </Text>
-                <ImageUpload
-                  onUploadSuccess={handleFileUpload}
-                  onUploadError={(error) => message.error(`Erro no upload: ${error}`)}
-                  value={form.getFieldValue('download_file')}
-                />
+                
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <Upload {...fileUploadProps}>
+                    <Button 
+                      icon={<UploadOutlined />} 
+                      loading={fileUploading}
+                    >
+                      {currentFile ? 'Alterar Arquivo' : 'Carregar Arquivo'}
+                    </Button>
+                  </Upload>
+                  
+                  {currentFile && (
+                    <>
+                      <Button
+                        icon={<DeleteOutlined />}
+                        onClick={() => {
+                          form.setFieldsValue({ download_file: undefined })
+                          setHomeAboutData(prev => prev ? { ...prev, download_file: undefined } : null)
+                        }}
+                      >
+                        Remover
+                      </Button>
+                      <Button
+                        type="link"
+                        onClick={() => window.open(currentFile, '_blank')}
+                      >
+                        Ver arquivo atual
+                      </Button>
+                    </>
+                  )}
+                </div>
               </Form.Item>
 
               <Divider />

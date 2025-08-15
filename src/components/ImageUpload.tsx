@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -19,12 +19,14 @@ import { FiUpload, FiX, FiEye, FiFile, FiDownload } from 'react-icons/fi';
 
 interface FileUploadProps {
   onUpload?: (fileInfo: UploadedFile) => void;
-  onUploadSuccess?: (url: string) => void; // Para compatibilidade com código existente
-  onUploadError?: (error: string) => void; // Para compatibilidade com código existente
+  onUploadSuccess?: (url: string) => void;
+  onUploadError?: (error: string) => void;
   accept?: string;
-  maxSize?: number; // em MB
+  maxSize?: number;
   multiple?: boolean;
   showPreview?: boolean;
+  value?: string; // URL do arquivo existente
+  compact?: boolean; // Modo compacto para listagens
 }
 
 interface UploadedFile {
@@ -34,7 +36,6 @@ interface UploadedFile {
   url: string;
   size: number;
   type: string;
-  // Removidos campos path e subFolder que não existem no banco
 }
 
 interface FileInfo {
@@ -48,17 +49,31 @@ export default function FileUpload({
   onUploadSuccess,
   onUploadError,
   accept = "*/*",
-  maxSize = 100, // 100MB padrão
+  maxSize = 100,
   multiple = false,
-  showPreview = true
+  showPreview = true,
+  value,
+  compact = false
 }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [preview, setPreview] = useState<string | null>(null);
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
+  const [existingFile, setExistingFile] = useState<string | null>(value || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
+
+  // Atualizar preview quando value mudar
+  useEffect(() => {
+    if (value && value !== existingFile) {
+      setExistingFile(value);
+      // Se for uma imagem, tentar mostrar preview
+      if (value.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+        setPreview(value);
+      }
+    }
+  }, [value, existingFile]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -92,7 +107,6 @@ export default function FileUpload({
       };
       reader.readAsDataURL(file);
     } else {
-      // Para outros tipos de arquivo, mostrar ícone
       setPreview(null);
     }
 
@@ -134,7 +148,9 @@ export default function FileUpload({
       const result = await response.json();
       
       if (result.success) {
-        setUploadedFile(result.files[0]);
+        const newFile = result.files[0];
+        setUploadedFile(newFile);
+        setExistingFile(newFile.url);
         
         toast({
           title: "Upload realizado com sucesso!",
@@ -144,19 +160,17 @@ export default function FileUpload({
           isClosable: true,
         });
 
-        // Chama as callbacks para compatibilidade
+        // Chama as callbacks
         if (onUpload) {
-          onUpload(result.files[0]);
+          onUpload(newFile);
         }
         
-        // Para compatibilidade com código existente
         if (onUploadSuccess) {
-          onUploadSuccess(result.files[0].url);
+          onUploadSuccess(newFile.url);
         }
       } else {
         const errorMessage = result.error || 'Erro desconhecido no upload';
         
-        // Para compatibilidade com código existente
         if (onUploadError) {
           onUploadError(errorMessage);
         }
@@ -168,7 +182,6 @@ export default function FileUpload({
       console.error('Erro no upload:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       
-      // Para compatibilidade com código existente
       if (onUploadError) {
         onUploadError(errorMessage);
       }
@@ -187,10 +200,11 @@ export default function FileUpload({
   };
 
   const handleCopyLink = async () => {
-    if (!uploadedFile?.url) return;
+    const url = uploadedFile?.url || existingFile;
+    if (!url) return;
     
     try {
-      await navigator.clipboard.writeText(uploadedFile.url);
+      await navigator.clipboard.writeText(url);
       toast({
         title: "Link copiado!",
         description: "Link do arquivo copiado para a área de transferência",
@@ -201,7 +215,7 @@ export default function FileUpload({
     } catch (error) {
       // Fallback para navegadores que não suportam clipboard API
       const textArea = document.createElement('textarea');
-      textArea.value = uploadedFile.url;
+      textArea.value = url;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand('copy');
@@ -218,17 +232,18 @@ export default function FileUpload({
   };
 
   const handleDownload = () => {
-    if (!uploadedFile?.url) return;
+    const url = uploadedFile?.url || existingFile;
+    if (!url) return;
     
     // Para PDFs e documentos, forçar download
     if (fileInfo?.type.includes('pdf') || fileInfo?.type.includes('document')) {
       const link = document.createElement('a');
-      link.href = uploadedFile.url;
+      link.href = url;
       link.download = fileInfo.name;
       link.click();
     } else {
       // Para outros arquivos, abrir em nova aba
-      window.open(uploadedFile.url, '_blank');
+      window.open(url, '_blank');
     }
   };
 
@@ -236,8 +251,13 @@ export default function FileUpload({
     setPreview(null);
     setFileInfo(null);
     setUploadedFile(null);
+    setExistingFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+    // Limpar o valor do formulário
+    if (onUploadSuccess) {
+      onUploadSuccess('');
     }
   };
 
@@ -266,6 +286,62 @@ export default function FileUpload({
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
+
+  // Modo compacto para listagens
+  if (compact) {
+    return (
+      <Box>
+        <HStack spacing={2}>
+          <Input
+            ref={fileInputRef}
+            type="file"
+            accept={accept}
+            onChange={handleFileSelect}
+            display="none"
+            multiple={multiple}
+          />
+          
+          <Button
+            leftIcon={<FiUpload />}
+            colorScheme="blue"
+            onClick={() => fileInputRef.current?.click()}
+            isLoading={isUploading}
+            loadingText="Enviando..."
+            size="sm"
+          >
+            {existingFile ? 'Alterar' : 'Selecionar'}
+          </Button>
+          
+          {existingFile && (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => window.open(existingFile, '_blank')}
+              >
+                Ver
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                colorScheme="red"
+                onClick={handleClear}
+              >
+                <FiX />
+              </Button>
+            </>
+          )}
+        </HStack>
+        
+        {isUploading && (
+          <Box mt={2}>
+            <Progress value={uploadProgress} colorScheme="blue" size="sm" />
+            <Text mt={1} fontSize="xs" textAlign="right">{uploadProgress}%</Text>
+          </Box>
+        )}
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -297,7 +373,7 @@ export default function FileUpload({
             loadingText="Enviando..."
             size="lg"
           >
-            Selecionar Arquivo
+            {existingFile ? 'Alterar Arquivo' : 'Selecionar Arquivo'}
           </Button>
           
           <Text mt={2} fontSize="sm" color="gray.600">
@@ -319,7 +395,7 @@ export default function FileUpload({
         )}
 
         {/* Preview e Informações do Arquivo */}
-        {showPreview && (fileInfo || uploadedFile) && (
+        {showPreview && (fileInfo || uploadedFile || existingFile) && (
           <Box
             border="1px solid"
             borderColor="gray.200"
@@ -332,11 +408,13 @@ export default function FileUpload({
                 <Text fontSize="lg">{getFileIcon(fileInfo?.type || '')}</Text>
                 <VStack align="start" spacing={0}>
                   <Text fontWeight="bold" fontSize="sm">
-                    {fileInfo?.name || uploadedFile?.originalName}
+                    {fileInfo?.name || uploadedFile?.originalName || 'Arquivo existente'}
                   </Text>
-                  <Text fontSize="xs" color="gray.600">
-                    {getFileTypeLabel(fileInfo?.type || '')} • {formatFileSize(fileInfo?.size || 0)}
-                  </Text>
+                  {fileInfo && (
+                    <Text fontSize="xs" color="gray.600">
+                      {getFileTypeLabel(fileInfo.type)} • {formatFileSize(fileInfo.size)}
+                    </Text>
+                  )}
                 </VStack>
               </HStack>
               
@@ -350,7 +428,7 @@ export default function FileUpload({
             </HStack>
 
             {/* Preview da Imagem */}
-            {preview && fileInfo?.type.startsWith('image/') && (
+            {preview && (
               <Box mb={3}>
                 <Image
                   src={preview}
@@ -363,7 +441,7 @@ export default function FileUpload({
             )}
 
             {/* Botões de Ação */}
-            {uploadedFile && (
+            {(uploadedFile || existingFile) && (
               <HStack spacing={2}>
                 <IconButton
                   aria-label="Visualizar/Download"
@@ -382,7 +460,7 @@ export default function FileUpload({
                 />
                 
                 <Badge colorScheme="green" variant="subtle">
-                  Enviado
+                  {uploadedFile ? 'Enviado' : 'Existente'}
                 </Badge>
               </HStack>
             )}
