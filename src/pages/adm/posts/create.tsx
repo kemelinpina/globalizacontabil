@@ -18,13 +18,17 @@ import {
   SaveOutlined,
   UploadOutlined,
   DeleteOutlined,
+  EyeOutlined,
 } from '@ant-design/icons'
-import AdminLayout from '../../components/AdminLayout'
+import AdminLayout from '../../../components/AdminLayout'
 import Head from 'next/head'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/router'
+import { useAuth } from '../../../contexts/AuthContext'
+import dayjs from 'dayjs'
 
 // Importar CKEditor dinamicamente para evitar problemas de SSR
-const PostEditor = dynamic(() => import('../../components/PostEditor'), {
+const PostEditor = dynamic(() => import('../../../components/PostEditor'), {
   ssr: false,
   loading: () => <div>Carregando editor...</div>
 })
@@ -37,6 +41,7 @@ interface Category {
   id: number
   name: string
   color: string
+  is_active: boolean
 }
 
 interface FormValues {
@@ -61,6 +66,7 @@ export default function CreatePostPage() {
   const [form] = Form.useForm()
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingCategories, setLoadingCategories] = useState(true)
   const [saving, setSaving] = useState(false)
   const [featuredImageUploading, setFeaturedImageUploading] = useState(false)
   const [socialImageUploading, setSocialImageUploading] = useState(false)
