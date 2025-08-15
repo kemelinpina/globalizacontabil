@@ -8,7 +8,7 @@ import { prisma } from '../../../lib/prisma';
 const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      const basePath = '/var/www/html/arquivos_globalizacontabil';
+      const basePath = '/var/www/html/uploads_globaliza';
       
       // Cria pasta principal se não existir
       if (!fs.existsSync(basePath)) {
@@ -70,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         // Constrói a URL de acesso
         const fileName = path.basename(file.path);
-        const fileUrl = `${baseUrl}/arquivos_globalizacontabil/${fileName}`;
+        const fileUrl = `${baseUrl}/uploads_globaliza/${fileName}`;
         
         // Salva no banco de dados
         const dbFile = await prisma.files.create({
@@ -115,9 +115,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error) {
     console.error('Erro no upload:', error);
+    
+    // Log mais detalhado para debug
+    if (error instanceof Error) {
+      console.error('Stack trace:', error.stack);
+    }
+    
     res.status(500).json({ 
       error: 'Erro interno do servidor',
-      details: error instanceof Error ? error.message : 'Erro desconhecido'
+      details: error instanceof Error ? error.message : 'Erro desconhecido',
+      stack: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.stack : undefined : undefined
     });
   }
 }

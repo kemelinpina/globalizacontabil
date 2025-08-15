@@ -42,7 +42,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     } catch (error) {
       console.error('Erro ao buscar arquivos:', error)
-      return res.status(500).json({ message: 'Erro interno do servidor' })
+      
+      // Log mais detalhado para debug
+      if (error instanceof Error) {
+        console.error('Stack trace:', error.stack);
+      }
+      
+      return res.status(500).json({ 
+        error: 'Erro interno do servidor',
+        details: error instanceof Error ? error.message : 'Erro desconhecido',
+        stack: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.stack : undefined : undefined
+      })
     }
   }
 
