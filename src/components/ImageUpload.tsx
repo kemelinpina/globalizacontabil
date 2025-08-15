@@ -19,6 +19,8 @@ import { FiUpload, FiX, FiEye, FiFile, FiDownload } from 'react-icons/fi';
 
 interface FileUploadProps {
   onUpload?: (fileInfo: UploadedFile) => void;
+  onUploadSuccess?: (url: string) => void; // Para compatibilidade com código existente
+  onUploadError?: (error: string) => void; // Para compatibilidade com código existente
   accept?: string;
   maxSize?: number; // em MB
   multiple?: boolean;
@@ -32,7 +34,7 @@ interface UploadedFile {
   url: string;
   size: number;
   type: string;
-  subFolder: string;
+  // Removidos campos path e subFolder que não existem no banco
 }
 
 interface FileInfo {
@@ -43,6 +45,8 @@ interface FileInfo {
 
 export default function FileUpload({
   onUpload,
+  onUploadSuccess,
+  onUploadError,
   accept = "*/*",
   maxSize = 100, // 100MB padrão
   multiple = false,
@@ -140,18 +144,38 @@ export default function FileUpload({
           isClosable: true,
         });
 
+        // Chama as callbacks para compatibilidade
         if (onUpload) {
           onUpload(result.files[0]);
         }
+        
+        // Para compatibilidade com código existente
+        if (onUploadSuccess) {
+          onUploadSuccess(result.files[0].url);
+        }
       } else {
-        throw new Error(result.error || 'Erro desconhecido no upload');
+        const errorMessage = result.error || 'Erro desconhecido no upload';
+        
+        // Para compatibilidade com código existente
+        if (onUploadError) {
+          onUploadError(errorMessage);
+        }
+        
+        throw new Error(errorMessage);
       }
 
     } catch (error) {
       console.error('Erro no upload:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      
+      // Para compatibilidade com código existente
+      if (onUploadError) {
+        onUploadError(errorMessage);
+      }
+      
       toast({
         title: "Erro no upload",
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        description: errorMessage,
         status: "error",
         duration: 5000,
         isClosable: true,

@@ -5,7 +5,6 @@ import {
   Space,
   message,
   Popconfirm,
-  Upload,
   Tag,
   Input,
   Tooltip,
@@ -13,12 +12,12 @@ import {
 import {
   DeleteOutlined,
   EyeOutlined,
-  UploadOutlined,
   LinkOutlined,
   SearchOutlined,
 } from '@ant-design/icons'
 
 import AdminLayout from '../../components/AdminLayout'
+import FileUpload from '../../components/ImageUpload'
 import Head from 'next/head'
 
 interface FileItem {
@@ -35,7 +34,6 @@ export default function FilesPage() {
   const [files, setFiles] = useState<FileItem[]>([])
   const [filteredFiles, setFilteredFiles] = useState<FileItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [uploading, setUploading] = useState(false)
   const [searchText, setSearchText] = useState('')
 
   const fetchFiles = useCallback(async () => {
@@ -68,38 +66,6 @@ export default function FilesPage() {
       setFilteredFiles(files)
     }
   }, [files, searchText])
-
-  const handleUpload = async (file: unknown) => {
-    const formData = new FormData()
-    formData.append('files', file as File)
-
-    setUploading(true)
-
-    try {
-      const response = await fetch('/api/arquivos/upload', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro no upload')
-      }
-
-      if (data.success) {
-        message.success('Arquivo enviado com sucesso')
-        fetchFiles()
-      } else {
-        throw new Error(data.error || 'Erro desconhecido no upload')
-      }
-    } catch (error) {
-      console.error('Erro no upload:', error)
-      message.error(error instanceof Error ? error.message : 'Erro ao enviar arquivo')
-    } finally {
-      setUploading(false)
-    }
-  }
 
   const handleDelete = async (id: number) => {
     try {
@@ -260,17 +226,6 @@ export default function FilesPage() {
     },
   ]
 
-  const uploadProps = {
-    name: 'file',
-    multiple: false,
-    showUploadList: false,
-    beforeUpload: (file: unknown) => {
-      handleUpload(file)
-      return false // Prevent default upload behavior
-    },
-    accept: '*/*', // Aceitar todos os tipos de arquivo
-  }
-
   return (
     <>
       <Head>
@@ -301,15 +256,18 @@ export default function FilesPage() {
                 style={{ width: '300px' }}
                 allowClear
               />
-              <Upload {...uploadProps}>
-                <Button
-                  type="primary"
-                  icon={<UploadOutlined />}
-                  loading={uploading}
-                >
-                  Enviar Arquivo
-                </Button>
-              </Upload>
+              <FileUpload
+                onUploadSuccess={() => {
+                  message.success('Arquivo enviado com sucesso')
+                  fetchFiles()
+                }}
+                onUploadError={(error) => {
+                  message.error(error)
+                }}
+                accept="*/*"
+                maxSize={100}
+                showPreview={false}
+              />
             </div>
           </div>
 
