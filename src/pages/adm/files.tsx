@@ -124,7 +124,7 @@ export default function FilesPage() {
 
   const handleCopyLink = async (url: string) => {
     try {
-      // O URL já vem completo do Cloudinary, não precisa concatenar com origin
+      // O URL já vem completo do servidor local, não precisa concatenar com origin
       await navigator.clipboard.writeText(url)
       message.success({
         content: 'Link copiado para a área de transferência!',
