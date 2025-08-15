@@ -105,8 +105,8 @@ export default function SectionSobre() {
                                 }}
                             />
                         </Box>
-                        <Box display={isMobile ? 'none' : 'block'} position='absolute' top={'10%'} right={'-12%'} boxSize={40} bg='linear-gradient(114deg, #8fc2fd 0%, #235da0 34%, #0d335e 74%)' borderRadius='4px' zIndex={1}></Box>
-                        <Box display={isMobile ? 'none' : 'block'} position='absolute' bottom={'5%'} left={'-12%'} boxSize={40} bg='linear-gradient(114deg, #0d335e  56%, #235da0 74%, #8fc2fd 100%)' borderRadius='4px' zIndex={1}></Box>
+                        {/* <Box display={isMobile ? 'none' : 'block'} position='absolute' top={'10%'} right={'-12%'} boxSize={40} bg='linear-gradient(114deg, #8fc2fd 0%, #235da0 34%, #0d335e 74%)' borderRadius='4px' zIndex={1}></Box> */}
+                        {/* <Box display={isMobile ? 'none' : 'block'} position='absolute' bottom={'5%'} left={'-12%'} boxSize={40} bg='linear-gradient(114deg, #0d335e  56%, #235da0 74%, #8fc2fd 100%)' borderRadius='4px' zIndex={1}></Box> */}
                     </Box>
                 </Flex>
             </Container>

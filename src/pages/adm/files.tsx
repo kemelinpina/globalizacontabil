@@ -71,7 +71,7 @@ export default function FilesPage() {
 
   const handleUpload = async (file: unknown) => {
     const formData = new FormData()
-    formData.append('file', file as File)
+    formData.append('files', file as File)
 
     setUploading(true)
 
@@ -84,11 +84,15 @@ export default function FilesPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || 'Erro no upload')
+        throw new Error(data.error || 'Erro no upload')
       }
 
-      message.success('Arquivo enviado com sucesso')
-      fetchFiles()
+      if (data.success) {
+        message.success('Arquivo enviado com sucesso')
+        fetchFiles()
+      } else {
+        throw new Error(data.error || 'Erro desconhecido no upload')
+      }
     } catch (error) {
       console.error('Erro no upload:', error)
       message.error(error instanceof Error ? error.message : 'Erro ao enviar arquivo')
@@ -120,8 +124,8 @@ export default function FilesPage() {
 
   const handleCopyLink = async (url: string) => {
     try {
-      const fullUrl = `${window.location.origin}${url}`
-      await navigator.clipboard.writeText(fullUrl)
+      // O URL já vem completo do Cloudinary, não precisa concatenar com origin
+      await navigator.clipboard.writeText(url)
       message.success({
         content: 'Link copiado para a área de transferência!',
         duration: 3,
@@ -131,7 +135,7 @@ export default function FilesPage() {
       // Fallback para navegadores mais antigos
       try {
         const textArea = document.createElement('textarea')
-        textArea.value = `${window.location.origin}${url}`
+        textArea.value = url
         document.body.appendChild(textArea)
         textArea.select()
         document.execCommand('copy')

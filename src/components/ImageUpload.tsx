@@ -1,190 +1,370 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react';
 import {
   Box,
-  Text,
+  Button,
+  Input,
   VStack,
   HStack,
+  Text,
+  Image,
   IconButton,
   useToast,
+  Progress,
   Spinner,
-} from '@chakra-ui/react'
-import { FiUpload, FiX, FiEye } from 'react-icons/fi'
+  Badge,
+  Flex,
+  Icon
+} from '@chakra-ui/react';
+import { FiUpload, FiX, FiEye, FiFile, FiDownload } from 'react-icons/fi';
 
-
-
-interface ImageUploadProps {
-  value?: string
-  onChange?: (url: string) => void
-  onRemove?: () => void
-  placeholder?: string
-  accept?: string
-  maxSize?: number // em MB
-  onUploadSuccess?: (url: string) => void
-  onUploadError?: (error: string) => void
+interface FileUploadProps {
+  onUpload?: (fileInfo: UploadedFile) => void;
+  accept?: string;
+  maxSize?: number; // em MB
+  multiple?: boolean;
+  showPreview?: boolean;
 }
 
-export default function ImageUpload({
-  value,
-  onChange,
-  onRemove,
-  placeholder = "Clique para fazer upload da imagem",
-  accept = "image/*",
-  maxSize = 5,
-  onUploadSuccess,
-  onUploadError
-}: ImageUploadProps) {
-  const [isUploading, setIsUploading] = useState(false)
-  const [preview, setPreview] = useState<string | null>(value || null)
-  const toast = useToast()
+interface UploadedFile {
+  id: number;
+  originalName: string;
+  fileName: string;
+  url: string;
+  size: number;
+  type: string;
+  subFolder: string;
+}
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+interface FileInfo {
+  name: string;
+  type: string;
+  size: number;
+}
 
-    // Validar tamanho
+export default function FileUpload({
+  onUpload,
+  accept = "*/*",
+  maxSize = 100, // 100MB padrão
+  multiple = false,
+  showPreview = true
+}: FileUploadProps) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    
+    // Validação de tamanho
     if (file.size > maxSize * 1024 * 1024) {
-      const errorMsg = `O arquivo deve ter no máximo ${maxSize}MB`
-      onUploadError?.(errorMsg)
       toast({
         title: "Arquivo muito grande",
-        description: errorMsg,
+        description: `O arquivo deve ter no máximo ${maxSize}MB`,
         status: "error",
         duration: 3000,
         isClosable: true,
-      })
-      return
+      });
+      return;
     }
 
-    // Validar tipo
-    if (!file.type.startsWith('image/')) {
-      const errorMsg = "Apenas arquivos de imagem são permitidos"
-      onUploadError?.(errorMsg)
-      toast({
-        title: "Tipo de arquivo inválido",
-        description: errorMsg,
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      })
-      return
+    setFileInfo({
+      name: file.name,
+      type: file.type,
+      size: file.size
+    });
+
+    // Preview para imagens
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // Para outros tipos de arquivo, mostrar ícone
+      setPreview(null);
     }
 
-    setIsUploading(true)
+    // Upload automático
+    handleUpload(file);
+  };
+
+  const handleUpload = async (file: File) => {
+    setIsUploading(true);
+    setUploadProgress(0);
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
+      const formData = new FormData();
+      formData.append('files', file);
+
+      // Simular progresso
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
 
       const response = await fetch('/api/arquivos/upload', {
         method: 'POST',
-        body: formData,
-      })
+        body: formData
+      });
 
-      const data = await response.json()
+      clearInterval(progressInterval);
+      setUploadProgress(100);
 
       if (!response.ok) {
-        throw new Error(data.message || 'Erro no upload')
+        throw new Error(`Erro no upload: ${response.statusText}`);
       }
 
-      setPreview(data.file.url)
-      onChange?.(data.file.url)
-      onUploadSuccess?.(data.file.url)
+      const result = await response.json();
+      
+      if (result.success) {
+        setUploadedFile(result.files[0]);
+        
+        toast({
+          title: "Upload realizado com sucesso!",
+          description: `Arquivo "${file.name}" enviado`,
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
 
-      toast({
-        title: "Upload realizado com sucesso",
-        description: "Imagem enviada com sucesso",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      })
+        if (onUpload) {
+          onUpload(result.files[0]);
+        }
+      } else {
+        throw new Error(result.error || 'Erro desconhecido no upload');
+      }
 
     } catch (error) {
-      console.error('Erro no upload:', error)
-      const errorMsg = error instanceof Error ? error.message : "Erro interno do servidor"
-      onUploadError?.(errorMsg)
+      console.error('Erro no upload:', error);
       toast({
         title: "Erro no upload",
-        description: errorMsg,
+        description: error instanceof Error ? error.message : 'Erro desconhecido',
         status: "error",
-        duration: 3000,
+        duration: 5000,
         isClosable: true,
-      })
+      });
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
+      setUploadProgress(0);
     }
-  }
+  };
 
-  const handleRemove = () => {
-    setPreview(null)
-    onRemove?.()
-  }
+  const handleCopyLink = async () => {
+    if (!uploadedFile?.url) return;
+    
+    try {
+      await navigator.clipboard.writeText(uploadedFile.url);
+      toast({
+        title: "Link copiado!",
+        description: "Link do arquivo copiado para a área de transferência",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
+    } catch (error) {
+      // Fallback para navegadores que não suportam clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = uploadedFile.url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      toast({
+        title: "Link copiado!",
+        description: "Link copiado para a área de transferência",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleDownload = () => {
+    if (!uploadedFile?.url) return;
+    
+    // Para PDFs e documentos, forçar download
+    if (fileInfo?.type.includes('pdf') || fileInfo?.type.includes('document')) {
+      const link = document.createElement('a');
+      link.href = uploadedFile.url;
+      link.download = fileInfo.name;
+      link.click();
+    } else {
+      // Para outros arquivos, abrir em nova aba
+      window.open(uploadedFile.url, '_blank');
+    }
+  };
+
+  const handleClear = () => {
+    setPreview(null);
+    setFileInfo(null);
+    setUploadedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const getFileIcon = (fileType: string) => {
+    if (fileType.startsWith('image/')) return '🖼️';
+    if (fileType.includes('pdf')) return '📄';
+    if (fileType.includes('document')) return '📝';
+    if (fileType.includes('video')) return '🎥';
+    if (fileType.includes('audio')) return '🎵';
+    return '📁';
+  };
+
+  const getFileTypeLabel = (fileType: string) => {
+    if (fileType.startsWith('image/')) return 'Imagem';
+    if (fileType.includes('pdf')) return 'PDF';
+    if (fileType.includes('document')) return 'Documento';
+    if (fileType.includes('video')) return 'Vídeo';
+    if (fileType.includes('audio')) return 'Áudio';
+    return 'Arquivo';
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   return (
-    <VStack spacing={4} align="stretch">
-      {preview ? (
-        <Box position="relative" borderRadius="md" overflow="hidden">
-          <img
-            src={preview}
-            alt="Preview"
-            style={{
-              width: '200px',
-              height: '200px',
-              objectFit: 'contain',
-            }}
-          />
-          <HStack position="absolute" top={2} right={2} spacing={2}>
-            <IconButton
-              aria-label="Visualizar"
-              icon={<FiEye />}
-              size="sm"
-              colorScheme="blue"
-              onClick={() => window.open(preview, '_blank')}
-            />
-            <IconButton
-              aria-label="Remover"
-              icon={<FiX />}
-              size="sm"
-              colorScheme="red"
-              onClick={handleRemove}
-            />
-          </HStack>
-        </Box>
-      ) : (
+    <Box>
+      <VStack spacing={4} align="stretch">
+        {/* Área de Upload */}
         <Box
           border="2px dashed"
           borderColor="gray.300"
-          borderRadius="md"
+          borderRadius="lg"
           p={6}
           textAlign="center"
-          cursor="pointer"
           _hover={{ borderColor: "blue.400" }}
           transition="all 0.2s"
         >
-          <input
+          <Input
+            ref={fileInputRef}
             type="file"
             accept={accept}
             onChange={handleFileSelect}
-            style={{ display: 'none' }}
-            id="image-upload"
-            disabled={isUploading}
+            display="none"
+            multiple={multiple}
           />
-          <label htmlFor="image-upload" style={{ cursor: 'pointer' }}>
-            <VStack spacing={3}>
-              {isUploading ? (
-                <Spinner size="lg" color="blue.500" />
-              ) : (
-                <FiUpload size={32} color="#3182CE" />
-              )}
-              <Text fontSize="sm" color="gray.600">
-                {isUploading ? "Enviando..." : placeholder}
-              </Text>
-              <Text fontSize="xs" color="gray.500">
-                Máximo: {maxSize}MB
-              </Text>
-            </VStack>
-          </label>
+          
+          <Button
+            leftIcon={<FiUpload />}
+            colorScheme="blue"
+            onClick={() => fileInputRef.current?.click()}
+            isLoading={isUploading}
+            loadingText="Enviando..."
+            size="lg"
+          >
+            Selecionar Arquivo
+          </Button>
+          
+          <Text mt={2} fontSize="sm" color="gray.600">
+            Arraste e solte ou clique para selecionar
+          </Text>
+          
+          <Text fontSize="xs" color="gray.500">
+            Máximo: {maxSize}MB | Aceita: {accept === "*/*" ? "Todos os tipos" : accept}
+          </Text>
         </Box>
-      )}
-    </VStack>
-  )
+
+        {/* Progresso do Upload */}
+        {isUploading && (
+          <Box>
+            <Text mb={2} fontSize="sm">Enviando arquivo...</Text>
+            <Progress value={uploadProgress} colorScheme="blue" size="sm" />
+            <Text mt={1} fontSize="xs" textAlign="right">{uploadProgress}%</Text>
+          </Box>
+        )}
+
+        {/* Preview e Informações do Arquivo */}
+        {showPreview && (fileInfo || uploadedFile) && (
+          <Box
+            border="1px solid"
+            borderColor="gray.200"
+            borderRadius="lg"
+            p={4}
+            bg="gray.50"
+          >
+            <HStack justify="space-between" mb={3}>
+              <HStack>
+                <Text fontSize="lg">{getFileIcon(fileInfo?.type || '')}</Text>
+                <VStack align="start" spacing={0}>
+                  <Text fontWeight="bold" fontSize="sm">
+                    {fileInfo?.name || uploadedFile?.originalName}
+                  </Text>
+                  <Text fontSize="xs" color="gray.600">
+                    {getFileTypeLabel(fileInfo?.type || '')} • {formatFileSize(fileInfo?.size || 0)}
+                  </Text>
+                </VStack>
+              </HStack>
+              
+              <IconButton
+                aria-label="Limpar"
+                icon={<FiX />}
+                size="sm"
+                variant="ghost"
+                onClick={handleClear}
+              />
+            </HStack>
+
+            {/* Preview da Imagem */}
+            {preview && fileInfo?.type.startsWith('image/') && (
+              <Box mb={3}>
+                <Image
+                  src={preview}
+                  alt="Preview"
+                  maxH="200px"
+                  objectFit="contain"
+                  borderRadius="md"
+                />
+              </Box>
+            )}
+
+            {/* Botões de Ação */}
+            {uploadedFile && (
+              <HStack spacing={2}>
+                <IconButton
+                  aria-label="Visualizar/Download"
+                  icon={fileInfo?.type.includes('pdf') || fileInfo?.type.includes('document') ? <FiDownload /> : <FiEye />}
+                  size="sm"
+                  colorScheme="blue"
+                  onClick={handleDownload}
+                />
+                
+                <IconButton
+                  aria-label="Copiar link"
+                  icon={<FiFile />}
+                  size="sm"
+                  colorScheme="green"
+                  onClick={handleCopyLink}
+                />
+                
+                <Badge colorScheme="green" variant="subtle">
+                  Enviado
+                </Badge>
+              </HStack>
+            )}
+          </Box>
+        )}
+      </VStack>
+    </Box>
+  );
 }

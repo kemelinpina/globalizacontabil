@@ -1,86 +1,130 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import multer from 'multer'
-import { prisma } from '../../../lib/prisma'
-import { uploadToCloudinary } from '../../../lib/cloudinary'
+import { NextApiRequest, NextApiResponse } from 'next';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { prisma } from '../../../lib/prisma';
 
-// Configurar multer para upload em memória
+// Configuração do Multer para armazenamento local
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const basePath = '/var/www/html/arquivos_globalizacontabil';
+      
+      // Cria pasta principal se não existir
+      if (!fs.existsSync(basePath)) {
+        fs.mkdirSync(basePath, { recursive: true });
+      }
+      
+      cb(null, basePath);
+    },
+    filename: (req, file, cb) => {
+      // Nome único: timestamp + nome original limpo
+      const timestamp = Date.now();
+      const originalName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      cb(null, `${timestamp}_${originalName}`);
+    }
+  }),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
+    fileSize: 100 * 1024 * 1024 // 100MB
   },
   fileFilter: (req, file, cb) => {
-    // Permitir todos os tipos de arquivo
-    cb(null, true)
+    // Permite todos os tipos de arquivo
+    cb(null, true);
   }
-})
+});
 
-// Configurar multer para Next.js
-const runMiddleware = (req: NextApiRequest, res: NextApiResponse, fn: any) => {
+// Middleware para processar o upload
+const uploadMiddleware = upload.array('files');
+
+// Função para executar o middleware do Multer
+function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: any) {
   return new Promise((resolve, reject) => {
     fn(req, res, (result: any) => {
       if (result instanceof Error) {
-        return reject(result)
+        return reject(result);
       }
-      return resolve(result)
-    })
-  })
+      return resolve(result);
+    });
+  });
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' })
+    return res.status(405).json({ error: 'Método não permitido' });
   }
 
   try {
-    // Executar middleware do multer
-    await runMiddleware(req, res, upload.single('file'))
+    // Executa o middleware de upload
+    await runMiddleware(req, res, uploadMiddleware);
 
-    if (!req.file) {
-      return res.status(400).json({ message: 'Nenhum arquivo foi enviado' })
+    // Verifica se há arquivos
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'Nenhum arquivo enviado' });
     }
 
-    // Upload para Cloudinary
-    const cloudinaryResult = await uploadToCloudinary(
-      req.file.buffer,
-      req.file.originalname,
-      'globalizacontabil'
-    )
+    const uploadedFiles = [];
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://seudominio.com';
 
-    // Salvar informações do arquivo no banco
-    const fileRecord = await prisma.files.create({
-      data: {
-        name: req.file.originalname,
-        url: cloudinaryResult.secure_url,
-        size: cloudinaryResult.bytes,
-        type: req.file.mimetype,
-        cloudinary_id: cloudinaryResult.public_id
-      }
-    })
+    // Processa cada arquivo
+    for (const file of req.files as any[]) {
+      try {
+        // Constrói a URL de acesso
+        const fileName = path.basename(file.path);
+        const fileUrl = `${baseUrl}/arquivos_globalizacontabil/${fileName}`;
+        
+        // Salva no banco de dados
+        const dbFile = await prisma.files.create({
+          data: {
+            url: fileUrl,
+            name: file.originalname,
+            size: file.size,
+            type: file.mimetype,
+            path: file.path,
+            subFolder: null // Não usamos mais subpastas
+          }
+        });
 
-    return res.status(200).json({
-      message: 'Arquivo enviado com sucesso',
-      file: {
-        id: fileRecord.id,
-        name: fileRecord.name,
-        url: fileRecord.url,
-        size: fileRecord.size,
-        type: fileRecord.type,
-        cloudinary_id: cloudinaryResult.public_id
+        uploadedFiles.push({
+          id: dbFile.id,
+          originalName: file.originalname,
+          fileName: fileName,
+          url: fileUrl,
+          size: file.size,
+          type: file.mimetype,
+          subFolder: null
+        });
+
+      } catch (fileError) {
+        console.error('Erro ao processar arquivo:', fileError);
+        // Continua com outros arquivos mesmo se um falhar
       }
-    })
+    }
+
+    if (uploadedFiles.length === 0) {
+      return res.status(500).json({ error: 'Falha ao processar todos os arquivos' });
+    }
+
+    // Retorna sucesso
+    res.status(200).json({
+      success: true,
+      message: `${uploadedFiles.length} arquivo(s) enviado(s) com sucesso`,
+      files: uploadedFiles,
+      // Para compatibilidade com código existente
+      url: uploadedFiles[0]?.url
+    });
 
   } catch (error) {
-    console.error('Erro no upload:', error)
-    return res.status(500).json({ 
-      message: error instanceof Error ? error.message : 'Erro interno do servidor' 
-    })
+    console.error('Erro no upload:', error);
+    res.status(500).json({ 
+      error: 'Erro interno do servidor',
+      details: error instanceof Error ? error.message : 'Erro desconhecido'
+    });
   }
 }
 
-// Configurar para aceitar arquivos
+// Configuração para desabilitar o body parser padrão do Next.js
 export const config = {
   api: {
     bodyParser: false,
   },
-}
+};

@@ -9,6 +9,7 @@ import {
   Modal,
   message,
 } from 'antd'
+import { VStack, Box, Skeleton } from '@chakra-ui/react'
 import {
   DashboardOutlined,
   FileTextOutlined,
@@ -183,9 +184,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '100vh'
+        height: '100vh',
+        padding: '40px'
       }}>
-        Carregando...
+        <VStack spacing={3} align="stretch" w="full">
+          {/* Skeleton para 4 itens de menu */}
+          {[1, 2, 3, 4].map((item) => (
+            <Box key={item}>
+              <Skeleton height="20px" width="100%" />
+            </Box>
+          ))}
+        </VStack>
       </div>
     )
   }

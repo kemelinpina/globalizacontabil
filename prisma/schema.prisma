@@ -65,9 +65,11 @@ model Files {
   url           String
   size          Int?
   type          String?
+  path          String?  // Caminho físico do arquivo no servidor
+  subFolder     String?  // Subpasta onde o arquivo está armazenado
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
-  cloudinary_id String?
+  cloudinary_id String?  // Mantido para compatibilidade
 }
 
 model Menus {
