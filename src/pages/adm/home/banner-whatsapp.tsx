@@ -10,13 +10,16 @@ import {
   Typography,
   Divider,
   ColorPicker,
+  Upload,
+  Image,
 } from 'antd'
 import {
   SaveOutlined,
+  UploadOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons'
 import AdminLayout from '../../../components/AdminLayout'
 import Head from 'next/head'
-import ImageUpload from '../../../components/ImageUpload'
 
 const { Title, Text } = Typography
 const { TextArea } = Input
@@ -37,6 +40,7 @@ export default function BannerWhatsAppPage() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [bannerData, setBannerData] = useState<BannerWhatsAppData | null>(null)
+  const [imageUploading, setImageUploading] = useState(false)
 
   const fetchBannerData = async () => {
     try {
@@ -125,10 +129,68 @@ export default function BannerWhatsAppPage() {
     }
   }
 
-  const handleImageUpload = (url: string) => {
-    form.setFieldsValue({ background_image: url })
-    message.success('Imagem de background carregada com sucesso')
+  const handleImageUpload = async (file: File) => {
+    setImageUploading(true)
+    
+    try {
+      const formData = new FormData()
+      formData.append('files', file)
+
+      const response = await fetch('/api/arquivos/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro no upload: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.success) {
+        const imageUrl = result.files[0].url
+        form.setFieldsValue({ background_image: imageUrl })
+        setBannerData(prev => prev ? { ...prev, background_image: imageUrl } : null)
+        message.success('Imagem de background carregada com sucesso')
+      } else {
+        throw new Error(result.error || 'Erro desconhecido no upload')
+      }
+
+    } catch (error) {
+      console.error('Erro no upload da imagem:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+      message.error(`Erro no upload: ${errorMessage}`)
+    } finally {
+      setImageUploading(false)
+    }
   }
+
+  const imageUploadProps = {
+    name: 'image',
+    multiple: false,
+    showUploadList: false,
+    beforeUpload: (file: File) => {
+      // Validação de tipo
+      const isImage = file.type.startsWith('image/')
+      if (!isImage) {
+        message.error('Você só pode fazer upload de arquivos de imagem!')
+        return false
+      }
+      
+      // Validação de tamanho (10MB para imagens)
+      const isLt10M = file.size / 1024 / 1024 < 10
+      if (!isLt10M) {
+        message.error('Imagem deve ter menos de 10MB!')
+        return false
+      }
+      
+      // Upload customizado
+      handleImageUpload(file)
+      return false // Previne upload automático
+    },
+  }
+
+  const currentImage = form.getFieldValue('background_image')
 
   return (
     <>
@@ -244,11 +306,39 @@ export default function BannerWhatsAppPage() {
                   Carregue uma imagem de fundo. A cor selecionada acima será aplicada como filtro sobre a imagem.
                   Se não carregar nenhuma imagem, será usado apenas a cor sólida.
                 </Text>
-                <ImageUpload
-                  onUploadSuccess={handleImageUpload}
-                  onUploadError={(error) => message.error(`Erro no upload: ${error}`)}
-                  value={form.getFieldValue('background_image')}
-                />
+                
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <Upload {...imageUploadProps}>
+                    <Button 
+                      icon={<UploadOutlined />} 
+                      loading={imageUploading}
+                      type="primary"
+                    >
+                      {currentImage ? 'Alterar Imagem' : 'Carregar Imagem'}
+                    </Button>
+                  </Upload>
+                  
+                  {currentImage && (
+                    <>
+                      <Button
+                        icon={<DeleteOutlined />}
+                        onClick={() => {
+                          form.setFieldsValue({ background_image: undefined })
+                          setBannerData(prev => prev ? { ...prev, background_image: undefined } : null)
+                        }}
+                      >
+                        Remover
+                      </Button>
+                      <Image
+                        src={currentImage}
+                        alt="Imagem de background atual"
+                        width={100}
+                        height={100}
+                        style={{ objectFit: 'cover', borderRadius: '8px' }}
+                      />
+                    </>
+                  )}
+                </div>
               </Form.Item>
 
               <Divider />

@@ -11,17 +11,21 @@ import {
   Switch,
   DatePicker,
   Spin,
+  Upload,
+  Image,
 } from 'antd'
 import dayjs from 'dayjs'
 import {
   SaveOutlined,
   EyeOutlined,
   ArrowLeftOutlined,
+  UploadOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import AdminLayout from '../../../../components/AdminLayout'
 import PostEditor from '../../../../components/PostEditor'
-import ImageUpload from '../../../../components/ImageUpload'
+
 import { useAuth } from '../../../../contexts/AuthContext'
 import Head from 'next/head'
 
@@ -87,6 +91,8 @@ export default function EditPost() {
   const [loading, setLoading] = useState(false)
   const [loadingCategories, setLoadingCategories] = useState(true)
   const [loadingPost, setLoadingPost] = useState(true)
+  const [featuredImageUploading, setFeaturedImageUploading] = useState(false)
+  const [socialImageUploading, setSocialImageUploading] = useState(false)
   const [content, setContent] = useState('')
   const [post, setPost] = useState<Post | null>(null)
   const router = useRouter()
@@ -157,6 +163,126 @@ export default function EditPost() {
 
     fetchPost()
   }, [id, form, router])
+
+  const handleFeaturedImageUpload = async (file: File) => {
+    setFeaturedImageUploading(true)
+    
+    try {
+      const formData = new FormData()
+      formData.append('files', file)
+
+      const response = await fetch('/api/arquivos/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro no upload: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.success) {
+        const imageUrl = result.files[0].url
+        form.setFieldsValue({ featured_image: imageUrl })
+        message.success('Imagem destacada carregada com sucesso')
+      } else {
+        throw new Error(result.error || 'Erro desconhecido no upload')
+      }
+
+    } catch (error) {
+      console.error('Erro no upload da imagem destacada:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+      message.error(`Erro no upload: ${errorMessage}`)
+    } finally {
+      setFeaturedImageUploading(false)
+    }
+  }
+
+  const handleSocialImageUpload = async (file: File) => {
+    setSocialImageUploading(true)
+    
+    try {
+      const formData = new FormData()
+      formData.append('files', file)
+
+      const response = await fetch('/api/arquivos/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro no upload: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.success) {
+        const imageUrl = result.files[0].url
+        form.setFieldsValue({ social_image: imageUrl })
+        message.success('Imagem para redes sociais carregada com sucesso')
+      } else {
+        throw new Error(result.error || 'Erro desconhecido no upload')
+      }
+
+    } catch (error) {
+      console.error('Erro no upload da imagem social:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+      message.error(`Erro no upload: ${errorMessage}`)
+    } finally {
+      setSocialImageUploading(false)
+    }
+  }
+
+  const featuredImageUploadProps = {
+    name: 'featured_image',
+    multiple: false,
+    showUploadList: false,
+    beforeUpload: (file: File) => {
+      // Validação de tipo
+      const isImage = file.type.startsWith('image/')
+      if (!isImage) {
+        message.error('Você só pode fazer upload de arquivos de imagem!')
+        return false
+      }
+      
+      // Validação de tamanho (10MB para imagens)
+      const isLt10M = file.size / 1024 / 1024 < 10
+      if (!isLt10M) {
+        message.error('Imagem deve ter menos de 10MB!')
+        return false
+      }
+      
+      // Upload customizado
+      handleFeaturedImageUpload(file)
+      return false // Previne upload automático
+    },
+  }
+
+  const socialImageUploadProps = {
+    name: 'social_image',
+    multiple: false,
+    showUploadList: false,
+    beforeUpload: (file: File) => {
+      // Validação de tipo
+      const isImage = file.type.startsWith('image/')
+      if (!isImage) {
+        message.error('Você só pode fazer upload de arquivos de imagem!')
+        return false
+      }
+      
+      // Validação de tamanho (10MB para imagens)
+      const isLt10M = file.size / 1024 / 1024 < 10
+      if (!isLt10M) {
+        message.error('Imagem deve ter menos de 10MB!')
+        return false
+      }
+      
+      // Upload customizado
+      handleSocialImageUpload(file)
+      return false // Previne upload automático
+    },
+  }
 
   const handleSubmit = async (values: FormValues) => {
     if (!content.trim()) {
@@ -415,12 +541,37 @@ export default function EditPost() {
                   name="featured_image"
                   label="Imagem Destacada"
                 >
-                  <ImageUpload
-                    value={post?.featured_image || ''}
-                    placeholder="Clique para fazer upload da imagem destacada"
-                    onUploadSuccess={(url) => form.setFieldsValue({ featured_image: url })}
-                    onUploadError={(error) => message.error(error)}
-                  />
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <Upload {...featuredImageUploadProps}>
+                      <Button 
+                        icon={<UploadOutlined />} 
+                        loading={featuredImageUploading}
+                        type="primary"
+                      >
+                        {post?.featured_image ? 'Alterar Imagem' : 'Carregar Imagem'}
+                      </Button>
+                    </Upload>
+                    
+                    {post?.featured_image && (
+                      <>
+                        <Button
+                          icon={<DeleteOutlined />}
+                          onClick={() => {
+                            form.setFieldsValue({ featured_image: undefined })
+                          }}
+                        >
+                          Remover
+                        </Button>
+                        <Image
+                          src={post.featured_image}
+                          alt="Imagem destacada atual"
+                          width={100}
+                          height={100}
+                          style={{ objectFit: 'cover', borderRadius: '8px' }}
+                        />
+                      </>
+                    )}
+                  </div>
                 </Form.Item>
 
                 {/* Imagem Social */}
@@ -428,12 +579,36 @@ export default function EditPost() {
                   name="social_image"
                   label="Imagem para Redes Sociais"
                 >
-                  <ImageUpload
-                    value={post?.social_image || ''}
-                    placeholder="Clique para fazer upload da imagem para redes sociais"
-                    onUploadSuccess={(url) => form.setFieldsValue({ social_image: url })}
-                    onUploadError={(error) => message.error(error)}
-                  />
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <Upload {...socialImageUploadProps}>
+                      <Button 
+                        icon={<UploadOutlined />} 
+                        loading={socialImageUploading}
+                      >
+                        {post?.social_image ? 'Alterar Imagem' : 'Carregar Imagem'}
+                      </Button>
+                    </Upload>
+                    
+                    {post?.social_image && (
+                      <>
+                        <Button
+                          icon={<DeleteOutlined />}
+                          onClick={() => {
+                            form.setFieldsValue({ social_image: undefined })
+                          }}
+                        >
+                          Remover
+                        </Button>
+                        <Image
+                          src={post.social_image}
+                          alt="Imagem social atual"
+                          width={100}
+                          height={100}
+                          style={{ objectFit: 'cover', borderRadius: '8px' }}
+                        />
+                      </>
+                    )}
+                  </div>
                 </Form.Item>
 
                 <Divider />

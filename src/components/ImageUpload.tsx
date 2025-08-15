@@ -10,10 +10,7 @@ import {
   IconButton,
   useToast,
   Progress,
-  Spinner,
-  Badge,
-  Flex,
-  Icon
+  Badge
 } from '@chakra-ui/react';
 import { FiUpload, FiX, FiEye, FiFile, FiDownload } from 'react-icons/fi';
 

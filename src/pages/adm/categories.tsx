@@ -12,6 +12,8 @@ import {
   Table,
   Switch,
   ColorPicker,
+  Upload,
+  Image,
 } from 'antd'
 import {
   PlusOutlined,
@@ -19,10 +21,11 @@ import {
   DeleteOutlined,
   EyeOutlined,
   SearchOutlined,
+  UploadOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import AdminLayout from '../../components/AdminLayout'
-import ImageUpload from '../../components/ImageUpload'
+
 import Head from 'next/head'
 
 interface Category {
@@ -52,6 +55,7 @@ export default function CategoriesPage() {
   const [modalVisible, setModalVisible] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [searchText, setSearchText] = useState('')
+  const [iconUploading, setIconUploading] = useState(false)
   const [form] = Form.useForm()
   const router = useRouter()
 
@@ -123,6 +127,66 @@ export default function CategoriesPage() {
       console.error('Erro ao excluir categoria:', error)
       message.error('Erro ao excluir categoria')
     }
+  }
+
+  const handleIconUpload = async (file: File) => {
+    setIconUploading(true)
+    
+    try {
+      const formData = new FormData()
+      formData.append('files', file)
+
+      const response = await fetch('/api/arquivos/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro no upload: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.success) {
+        const iconUrl = result.files[0].url
+        form.setFieldsValue({ icon: iconUrl })
+        message.success('Ícone carregado com sucesso')
+      } else {
+        throw new Error(result.error || 'Erro desconhecido no upload')
+      }
+
+    } catch (error) {
+      console.error('Erro no upload do ícone:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+      message.error(`Erro no upload: ${errorMessage}`)
+    } finally {
+      setIconUploading(false)
+    }
+  }
+
+  const iconUploadProps = {
+    name: 'icon',
+    multiple: false,
+    showUploadList: false,
+    beforeUpload: (file: File) => {
+      // Validação de tipo
+      const isImage = file.type.startsWith('image/')
+      if (!isImage) {
+        message.error('Você só pode fazer upload de arquivos de imagem!')
+        return false
+      }
+      
+      // Validação de tamanho (5MB para ícones)
+      const isLt5M = file.size / 1024 / 1024 < 5
+      if (!isLt5M) {
+        message.error('Ícone deve ter menos de 5MB!')
+        return false
+      }
+      
+      // Upload customizado
+      handleIconUpload(file)
+      return false // Previne upload automático
+    },
   }
 
   const handleSubmit = async (values: FormValues) => {
@@ -405,12 +469,37 @@ export default function CategoriesPage() {
               name="icon"
               label="Ícone da Categoria (opcional)"
             >
-              <ImageUpload
-                value={form.getFieldValue('icon') || ''}
-                placeholder="Clique para fazer upload do ícone"
-                onUploadSuccess={(url) => form.setFieldsValue({ icon: url })}
-                onUploadError={(error) => message.error(error)}
-              />
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <Upload {...iconUploadProps}>
+                  <Button 
+                    icon={<UploadOutlined />} 
+                    loading={iconUploading}
+                    type="primary"
+                  >
+                    {form.getFieldValue('icon') ? 'Alterar Ícone' : 'Carregar Ícone'}
+                  </Button>
+                </Upload>
+                
+                {form.getFieldValue('icon') && (
+                  <>
+                    <Button
+                      icon={<DeleteOutlined />}
+                      onClick={() => {
+                        form.setFieldsValue({ icon: undefined })
+                      }}
+                    >
+                      Remover
+                    </Button>
+                    <Image
+                      src={form.getFieldValue('icon')}
+                      alt="Ícone atual"
+                      width={50}
+                      height={50}
+                      style={{ objectFit: 'contain', borderRadius: '4px' }}
+                    />
+                  </>
+                )}
+              </div>
             </Form.Item>
 
             <Form.Item
