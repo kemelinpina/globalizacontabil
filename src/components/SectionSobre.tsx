@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Box, Button, Container, Flex, Heading, Icon, Link, Text, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, useBreakpointValue } from '@chakra-ui/react'
+import { Box, Button, Container, Flex, Heading, Icon, Link, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, useBreakpointValue } from '@chakra-ui/react'
 
 import { TbMailShare } from 'react-icons/tb'
 import Contact from '@/components/Contact'
@@ -19,16 +19,29 @@ export default function SectionSobre() {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [aboutData, setAboutData] = useState<HomeAboutData | null>(null)
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const isMobile = useBreakpointValue({ base: true, md: false })
 
     useEffect(() => {
         const fetchAboutData = async () => {
             try {
+                setError(null)
                 const response = await fetch('/api/pg/home-about')
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`)
+                }
+                
                 const data = await response.json()
+                console.log('🔍 Dados carregados da API:', data)
+                console.log('🔍 homeAbout:', data.homeAbout)
+                console.log('🔍 download_file:', data.homeAbout?.download_file)
+                console.log('🔍 download_button_text:', data.homeAbout?.download_button_text)
+                
                 setAboutData(data.homeAbout)
             } catch (error) {
                 console.error('Erro ao buscar dados da seção sobre:', error)
+                setError(error instanceof Error ? error.message : 'Erro desconhecido')
             } finally {
                 setLoading(false)
             }
@@ -37,10 +50,34 @@ export default function SectionSobre() {
         fetchAboutData()
     }, [])
 
-    // Se não há dados configurados, não mostra a seção
-    if (loading || !aboutData || !aboutData.is_active) {
+    // Se está carregando, mostra loading
+    if (loading) {
+        return null // Ou um skeleton/loading se preferir
+    }
+
+    // Se há erro, não mostra a seção
+    if (error) {
+        console.error('Erro na seção sobre:', error)
         return null
     }
+
+    // Se não há dados configurados ou está inativo, não mostra a seção
+    if (!aboutData || !aboutData.is_active) {
+        console.log('🚫 Seção não exibida:', { 
+            hasData: !!aboutData, 
+            isActive: aboutData?.is_active,
+            downloadFile: aboutData?.download_file 
+        })
+        return null
+    }
+
+    console.log('✅ Seção sendo exibida:', {
+        title: aboutData.title,
+        hasPhoto: !!aboutData.photo,
+        hasDownloadFile: !!aboutData.download_file,
+        downloadFile: aboutData.download_file,
+        downloadButtonText: aboutData.download_button_text
+    })
 
     return (
         <Box mt={10} borderRadius='4px'>
@@ -72,6 +109,8 @@ export default function SectionSobre() {
                             >
                                 Fale comigo por e-mail
                             </Button>
+                            
+                            {/* Botão de Download - Só aparece se há arquivo */}
                             {aboutData.download_file && (
                                 <Button
                                     as={Link}

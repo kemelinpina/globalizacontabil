@@ -82,7 +82,7 @@ export default function BannerWhatsAppPage() {
     fetchBannerData()
   }, [])
 
-  const handleSave = async (values: any) => {
+  const handleSave = async (values: BannerWhatsAppData) => {
     try {
       setSaving(true)
 
@@ -229,21 +229,31 @@ export default function BannerWhatsAppPage() {
               <Form.Item
                 name="title"
                 label="Título (Chamada Principal)"
-                rules={[{ required: true, message: 'Título é obrigatório' }]}
+                rules={[
+                  { required: true, message: 'Título é obrigatório' },
+                  { max: 100, message: 'Título deve ter no máximo 100 caracteres' }
+                ]}
               >
                 <Input 
                   placeholder="Ex: Acesse nosso grupo de WhatsApp"
                   size="large"
+                  maxLength={100}
+                  showCount
                 />
               </Form.Item>
 
               <Form.Item
                 name="description"
                 label="Descrição (opcional)"
+                rules={[
+                  { max: 300, message: 'Descrição deve ter no máximo 300 caracteres' }
+                ]}
               >
                 <TextArea 
                   placeholder="Descrição adicional para o banner..."
                   rows={3}
+                  maxLength={300}
+                  showCount
                 />
               </Form.Item>
 
@@ -254,11 +264,16 @@ export default function BannerWhatsAppPage() {
               <Form.Item
                 name="button_text"
                 label="Texto do Botão"
-                rules={[{ required: true, message: 'Texto do botão é obrigatório' }]}
+                rules={[
+                  { required: true, message: 'Texto do botão é obrigatório' },
+                  { max: 50, message: 'Texto do botão deve ter no máximo 50 caracteres' }
+                ]}
               >
                 <Input 
                   placeholder="Ex: Entrar para o grupo"
                   size="large"
+                  maxLength={50}
+                  showCount
                 />
               </Form.Item>
 
@@ -268,8 +283,16 @@ export default function BannerWhatsAppPage() {
                 rules={[
                   { required: true, message: 'Link do WhatsApp é obrigatório' },
                   { 
-                    pattern: /^https:\/\/wa\.me\/\d+/, 
-                    message: 'Use o formato: https://wa.me/5511999999999' 
+                    pattern: /^https:\/\/wa\.me\/\d+(\?.*)?$/, 
+                    message: 'Use o formato: https://wa.me/5511999999999 ou https://wa.me/5511999999999?text=Olá' 
+                  },
+                  {
+                    validator: (_, value) => {
+                      if (value && !value.startsWith('https://wa.me/')) {
+                        return Promise.reject(new Error('Link deve começar com https://wa.me/'));
+                      }
+                      return Promise.resolve();
+                    }
                   }
                 ]}
               >
@@ -286,7 +309,21 @@ export default function BannerWhatsAppPage() {
               <Form.Item
                 name="background_color"
                 label="Cor de Filtro/Background"
-                rules={[{ required: true, message: 'Cor de background é obrigatória' }]}
+                rules={[
+                  { required: true, message: 'Cor de background é obrigatória' },
+                  {
+                    validator: (_, value) => {
+                      if (value && typeof value === 'string') {
+                        const hexColor = value.startsWith('#') ? value : `#${value}`;
+                        const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+                        if (!hexRegex.test(hexColor)) {
+                          return Promise.reject(new Error('Cor deve ser um valor hexadecimal válido'));
+                        }
+                      }
+                      return Promise.resolve();
+                    }
+                  }
+                ]}
               >
                 <ColorPicker 
                   format="hex"
@@ -300,7 +337,22 @@ export default function BannerWhatsAppPage() {
               </Form.Item>
 
               <Form.Item
+                name="background_image"
                 label="Imagem de Background (opcional)"
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (value && typeof value === 'string') {
+                        try {
+                          new URL(value);
+                        } catch {
+                          return Promise.reject(new Error('URL da imagem deve ser válida'));
+                        }
+                      }
+                      return Promise.resolve();
+                    }
+                  }
+                ]}
               >
                 <Text type="secondary" style={{ display: 'block', marginBottom: '16px' }}>
                   Carregue uma imagem de fundo. A cor selecionada acima será aplicada como filtro sobre a imagem.
@@ -362,6 +414,55 @@ export default function BannerWhatsAppPage() {
                   >
                     {bannerData?.id ? 'Atualizar' : 'Salvar'}
                   </Button>
+                  
+                  {bannerData?.id && (
+                    <Button
+                      danger
+                      icon={<DeleteOutlined />}
+                      size="large"
+                      onClick={async () => {
+                        try {
+                          const confirmed = window.confirm(
+                            'Tem certeza que deseja deletar este banner? Esta ação não pode ser desfeita.'
+                          )
+                          
+                          if (confirmed) {
+                            setSaving(true)
+                            const response = await fetch('/api/pg/banner-whatsapp', {
+                              method: 'DELETE',
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({ id: bannerData.id }),
+                            })
+
+                            if (response.ok) {
+                              message.success('Banner deletado com sucesso')
+                              setBannerData(null)
+                              form.resetFields()
+                              form.setFieldsValue({
+                                title: 'Acesse nosso grupo de WhatsApp',
+                                button_text: 'Entrar para o grupo',
+                                whatsapp_link: 'https://wa.me/5511999999999',
+                                background_color: '#013F71',
+                                is_active: true,
+                              })
+                            } else {
+                              const data = await response.json()
+                              message.error(data.message || 'Erro ao deletar banner')
+                            }
+                          }
+                        } catch (error) {
+                          console.error('Erro ao deletar:', error)
+                          message.error('Erro ao deletar banner')
+                        } finally {
+                          setSaving(false)
+                        }
+                      }}
+                    >
+                      Deletar
+                    </Button>
+                  )}
                 </Space>
               </Form.Item>
             </Form>

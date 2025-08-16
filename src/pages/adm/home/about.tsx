@@ -54,24 +54,40 @@ export default function HomeAboutPage() {
       const response = await fetch('/api/pg/home-about')
       const data = await response.json()
       
+      console.log('🔄 Dados carregados da API:', data)
+      console.log('🔄 homeAbout:', data.homeAbout)
+      console.log('🔄 download_file:', data.homeAbout?.download_file)
+      
       if (data.homeAbout) {
         const aboutData = data.homeAbout
         setHomeAboutData(aboutData)
         setEditorContent(aboutData.content)
-        form.setFieldsValue({
+        
+        const formValues = {
           title: aboutData.title,
           download_button_text: aboutData.download_button_text,
           photo: aboutData.photo,
           download_file: aboutData.download_file,
           is_active: aboutData.is_active,
-        })
+        }
+        
+        console.log('🔄 Valores sendo definidos no formulário:', formValues)
+        form.setFieldsValue(formValues)
+        
+        // Verificar se os valores foram definidos corretamente
+        setTimeout(() => {
+          console.log('🔄 Valores do formulário após setFieldsValue:', form.getFieldsValue())
+        }, 100)
       } else {
         // Valores padrão se não há conteúdo
-        form.setFieldsValue({
+        const defaultValues = {
           title: 'Sobre Andre Paravela',
           download_button_text: 'Baixe o novo material',
           is_active: true,
-        })
+        }
+        
+        console.log('🔄 Valores padrão sendo definidos:', defaultValues)
+        form.setFieldsValue(defaultValues)
         setEditorContent('<p>Formado em Ciências contábeis e em direito pela <a href="https://www.puc.br/campinas" target="_blank">PUC</a> de Campinas, com pós graduação em Finanças pela <a href="https://www.usp.br/esalq" target="_blank">USP Esalq</a>, executivo de Finanças Global com mais de 20 anos de experiência em corporações multinacionais e firmas do Big Four.</p>')
       }
     } catch (error) {
@@ -86,15 +102,23 @@ export default function HomeAboutPage() {
     fetchHomeAbout()
   }, [])
 
-  const handleSave = async (values: any) => {
+  const handleSave = async (values: HomeAboutData) => {
     try {
       setSaving(true)
 
+      // Obter o valor atual do campo download_file do formulário
+      const currentDownloadFile = form.getFieldValue('download_file')
+      
       const submitData = {
         ...values,
         content: editorContent,
+        download_file: currentDownloadFile, // Garantir que o campo seja incluído
         id: homeAboutData?.id
       }
+
+      console.log('💾 Dados sendo enviados para API:', submitData)
+      console.log('💾 download_file no submitData:', submitData.download_file)
+      console.log('💾 currentDownloadFile do form:', currentDownloadFile)
 
       const url = '/api/pg/home-about'
       const method = homeAboutData?.id ? 'PUT' : 'POST'
@@ -108,6 +132,7 @@ export default function HomeAboutPage() {
       })
 
       const data = await response.json()
+      console.log('💾 Resposta da API:', data)
 
       if (response.ok) {
         message.success(
@@ -167,6 +192,12 @@ export default function HomeAboutPage() {
     setFileUploading(true)
     
     try {
+      console.log('📁 Iniciando upload do arquivo:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      })
+      
       const formData = new FormData()
       formData.append('files', file)
 
@@ -180,11 +211,35 @@ export default function HomeAboutPage() {
       }
 
       const result = await response.json()
+      console.log('📁 Resultado do upload:', result)
       
       if (result.success) {
         const fileUrl = result.files[0].url
+        console.log('📁 URL do arquivo obtida:', fileUrl)
+        
+        // Atualizar o formulário
         form.setFieldsValue({ download_file: fileUrl })
-        setHomeAboutData(prev => prev ? { ...prev, download_file: fileUrl } : null)
+        
+        // Atualizar o estado local
+        setHomeAboutData(prev => {
+          const newData = prev ? { ...prev, download_file: fileUrl } : null
+          console.log('📁 Novo estado homeAboutData:', newData)
+          return newData
+        })
+        
+        console.log('📁 Estado atualizado:', {
+          formValue: form.getFieldValue('download_file'),
+          homeAboutData: homeAboutData ? { ...homeAboutData, download_file: fileUrl } : null
+        })
+        
+        // Forçar re-render do componente
+        setTimeout(() => {
+          console.log('📁 Estado após timeout:', {
+            formValue: form.getFieldValue('download_file'),
+            currentFile: form.getFieldValue('download_file')
+          })
+        }, 100)
+        
         message.success('Arquivo carregado com sucesso')
       } else {
         throw new Error(result.error || 'Erro desconhecido no upload')
@@ -245,6 +300,13 @@ export default function HomeAboutPage() {
   const currentPhoto = form.getFieldValue('photo')
   const currentFile = form.getFieldValue('download_file')
 
+  console.log('🔍 Estado atual do formulário:', {
+    currentPhoto,
+    currentFile,
+    formValues: form.getFieldsValue(),
+    homeAboutData
+  })
+
   return (
     <>
       <Head>
@@ -264,7 +326,7 @@ export default function HomeAboutPage() {
                 Home - Seção Sobre
               </Title>
               <Text type="secondary">
-                Configure o conteúdo da seção "Sobre" na página inicial
+                Configure o conteúdo da seção Sobre na página inicial
               </Text>
             </div>
           </div>
@@ -281,11 +343,16 @@ export default function HomeAboutPage() {
               <Form.Item
                 name="title"
                 label="Título da Seção"
-                rules={[{ required: true, message: 'Título é obrigatório' }]}
+                rules={[
+                  { required: true, message: 'Título é obrigatório' },
+                  { max: 100, message: 'Título deve ter no máximo 100 caracteres' }
+                ]}
               >
                 <Input 
                   placeholder="Ex: Sobre Andre Paravela"
                   size="large"
+                  maxLength={100}
+                  showCount
                 />
               </Form.Item>
 
@@ -348,11 +415,16 @@ export default function HomeAboutPage() {
               <Form.Item
                 name="download_button_text"
                 label="Texto do Botão"
-                rules={[{ required: true, message: 'Texto do botão é obrigatório' }]}
+                rules={[
+                  { required: true, message: 'Texto do botão é obrigatório' },
+                  { max: 50, message: 'Texto do botão deve ter no máximo 50 caracteres' }
+                ]}
               >
                 <Input 
                   placeholder="Ex: Baixe o novo material"
                   size="large"
+                  maxLength={50}
+                  showCount
                 />
               </Form.Item>
 
@@ -390,6 +462,9 @@ export default function HomeAboutPage() {
                       >
                         Ver arquivo atual
                       </Button>
+                      <Text type="secondary" style={{ fontSize: '12px' }}>
+                        Arquivo: {currentFile.split('/').pop()}
+                      </Text>
                     </>
                   )}
                 </div>
@@ -416,6 +491,54 @@ export default function HomeAboutPage() {
                   >
                     {homeAboutData?.id ? 'Atualizar' : 'Salvar'}
                   </Button>
+                  
+                  {homeAboutData?.id && (
+                    <Button
+                      danger
+                      icon={<DeleteOutlined />}
+                      size="large"
+                      onClick={async () => {
+                        try {
+                          const confirmed = window.confirm(
+                            'Tem certeza que deseja deletar este conteúdo? Esta ação não pode ser desfeita.'
+                          )
+                          
+                          if (confirmed) {
+                            setSaving(true)
+                            const response = await fetch('/api/pg/home-about', {
+                              method: 'DELETE',
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({ id: homeAboutData.id }),
+                            })
+
+                            if (response.ok) {
+                              message.success('Conteúdo deletado com sucesso')
+                              setHomeAboutData(null)
+                              form.resetFields()
+                              setEditorContent('<p>Formado em Ciências contábeis e em direito pela <a href="https://www.puc.br/campinas" target="_blank">PUC</a> de Campinas, com pós graduação em Finanças pela <a href="https://www.usp.br/esalq" target="_blank">USP Esalq</a>, executivo de Finanças Global com mais de 20 anos de experiência em corporações multinacionais e firmas do Big Four.</p>')
+                              form.setFieldsValue({
+                                title: 'Sobre Andre Paravela',
+                                download_button_text: 'Baixe o novo material',
+                                is_active: true,
+                              })
+                            } else {
+                              const data = await response.json()
+                              message.error(data.message || 'Erro ao deletar conteúdo')
+                            }
+                          }
+                        } catch (error) {
+                          console.error('Erro ao deletar:', error)
+                          message.error('Erro ao deletar conteúdo')
+                        } finally {
+                          setSaving(false)
+                        }
+                      }}
+                    >
+                      Deletar
+                    </Button>
+                  )}
                 </Space>
               </Form.Item>
             </Form>

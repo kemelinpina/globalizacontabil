@@ -17,16 +17,24 @@ interface BannerWhatsAppData {
 export default function BannerWhatsApp() {
     const [bannerData, setBannerData] = useState<BannerWhatsAppData | null>(null)
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const isMobile = useBreakpointValue({ base: true, md: false })
 
     useEffect(() => {
         const fetchBannerData = async () => {
             try {
+                setError(null)
                 const response = await fetch('/api/pg/banner-whatsapp')
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`)
+                }
+                
                 const data = await response.json()
                 setBannerData(data.bannerWhatsApp)
             } catch (error) {
                 console.error('Erro ao buscar dados do banner WhatsApp:', error)
+                setError(error instanceof Error ? error.message : 'Erro desconhecido')
             } finally {
                 setLoading(false)
             }
@@ -35,8 +43,19 @@ export default function BannerWhatsApp() {
         fetchBannerData()
     }, [])
 
+    // Se está carregando, mostra loading
+    if (loading) {
+        return null // Ou um skeleton/loading se preferir
+    }
+
+    // Se há erro, não mostra o banner
+    if (error) {
+        console.error('Erro no banner WhatsApp:', error)
+        return null
+    }
+
     // Se não há dados configurados ou está inativo, não mostra o banner
-    if (loading || !bannerData || !bannerData.is_active) {
+    if (!bannerData || !bannerData.is_active) {
         return null
     }
 
