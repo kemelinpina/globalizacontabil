@@ -180,22 +180,135 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // Se está carregando, mostrar loading
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        padding: '40px'
-      }}>
-        <VStack spacing={3} align="stretch" w="full">
-          {/* Skeleton para 4 itens de menu */}
-          {[1, 2, 3, 4].map((item) => (
-            <Box key={item}>
-              <Skeleton height="20px" width="100%" />
-            </Box>
-          ))}
-        </VStack>
-      </div>
+      <Layout style={{ height: '100vh', overflow: 'hidden' }} className="admin-layout">
+        <Sider
+          style={{
+            background: '#ffffff',
+            overflow: 'hidden',
+            justifyContent: 'space-between',
+          }}
+        >
+          {/* Skeleton para logo */}
+          <div style={{
+            height: 64,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderBottom: '1px solid #f0f0f0',
+            flexShrink: 0,
+          }}>
+            <Skeleton 
+              height="32px" 
+              width="32px" 
+              borderRadius="full"
+            />
+          </div>
+
+          <div style={{ 
+            flex: 1, 
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Skeleton para itens do menu */}
+            <div style={{ marginTop: 16, padding: '0 16px' }}>
+              {[1, 2, 3, 4, 5, 6].map((item) => (
+                <div key={item} style={{ marginBottom: 16 }}>
+                  <Skeleton 
+                    height="20px" 
+                    width="100%" 
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Skeleton para seção do usuário */}
+            <div style={{
+              padding: '16px',
+              borderTop: '1px solid #f0f0f0',
+              background: '#ffffff',
+              flexShrink: 0,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Skeleton 
+                  height="40px" 
+                  width="40px" 
+                  borderRadius="full"
+                  style={{ marginRight: 12 }}
+                />
+                <div style={{ flex: 1 }}>
+                  <Skeleton 
+                    height="14px" 
+                    width="80%" 
+                    style={{ marginBottom: 8 }}
+                  />
+                  <Skeleton 
+                    height="12px" 
+                    width="60%" 
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </Sider>
+
+        <Layout style={{ overflow: 'hidden' }}>
+          {/* Skeleton para header */}
+          <Header
+            style={{
+              padding: 0,
+              background: 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <Skeleton 
+              height="40px" 
+              width="40px" 
+              style={{ 
+                marginLeft: 16,
+                borderRadius: 4
+              }} 
+            />
+          </Header>
+
+          {/* Skeleton para conteúdo */}
+          <Content
+            style={{
+              margin: '24px 16px',
+              padding: 24,
+              background: '#ffffff',
+              borderRadius: 8,
+              overflow: 'auto',
+              minHeight: 'calc(100vh - 112px)',
+            }}
+          >
+            <VStack spacing={4} align="stretch" w="full">
+              {/* Skeleton para título da página */}
+              <Skeleton 
+                height="32px" 
+                width="40%" 
+              />
+              
+              {/* Skeleton para conteúdo da página */}
+              {[1, 2, 3, 4, 5].map((item) => (
+                <Box key={item}>
+                  <Skeleton 
+                    height="20px" 
+                    width="100%" 
+                    style={{ marginBottom: 8 }}
+                  />
+                  <Skeleton 
+                    height="16px" 
+                    width="90%" 
+                  />
+                </Box>
+              ))}
+            </VStack>
+          </Content>
+        </Layout>
+      </Layout>
     )
   }
 

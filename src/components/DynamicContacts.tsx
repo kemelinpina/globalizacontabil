@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Flex, IconButton, Link } from '@chakra-ui/react'
+import { Flex, IconButton, Link, Skeleton } from '@chakra-ui/react'
 import { getContactIcon, getContactColor } from '../utils/contactTypes'
 
 interface Contact {
@@ -37,7 +37,23 @@ export default function DynamicContacts({ location }: DynamicContactsProps) {
     fetchContacts()
   }, [location])
 
-  if (loading || contacts.length === 0) {
+  if (loading) {
+    return (
+      <Flex gap={4} justifyContent={location === 'header' ? 'flex-end' : location === 'home' ? 'center' : 'flex-start'} alignItems='center'>
+        {/* Skeleton para 3 contatos */}
+        {[1, 2, 3].map((item) => (
+          <Skeleton
+            key={item}
+            height="40px"
+            width="40px"
+            borderRadius="md"
+          />
+        ))}
+      </Flex>
+    )
+  }
+
+  if (contacts.length === 0) {
     return null
   }
 

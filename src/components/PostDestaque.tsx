@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Box, Heading, Text, Link, Container, Flex, Badge, Icon, useBreakpointValue } from '@chakra-ui/react'
+import { Box, Heading, Text, Link, Container, Flex, Badge, Icon, useBreakpointValue, Skeleton } from '@chakra-ui/react'
 import { FiCalendar } from 'react-icons/fi'
 import dayjs from 'dayjs'
 
@@ -49,8 +49,74 @@ export default function PostDestaque() {
     fetchFeaturedPost()
   }, [])
 
-  // Se não há post em destaque ou está carregando, não mostra nada
-  if (loading || !featuredPost) {
+  // Se está carregando, mostra skeleton
+  if (loading) {
+    return (
+      <Box bg="#fafafa" mt={'60px'}>
+        <Container maxW="container.xl" display={isMobile ? 'block' : 'flex'} borderRadius='4px' bg='white' p={4}>
+          {/* Skeleton para imagem */}
+          <Box 
+            w={isMobile ? '100%' : '25%'} 
+            h='100%' 
+            boxSize={isMobile ? '100%' : '25%'} 
+            minH={'357px'} 
+            bg='gray.200'
+            borderRadius='4px'
+          >
+            <Skeleton 
+              height="100%" 
+              width="100%" 
+              borderRadius="4px"
+            />
+          </Box>
+          
+          {/* Skeleton para conteúdo */}
+          <Box w={isMobile ? '100%' : '75%'} h='100%' p={4}>
+            {/* Skeleton para título */}
+            <Skeleton 
+              height="28px" 
+              width="80%" 
+              mb={2}
+              borderRadius="md"
+            />
+            
+            {/* Skeleton para descrição */}
+            <Skeleton 
+              height="20px" 
+              width="90%" 
+              mb={2}
+              borderRadius="md"
+            />
+            
+            {/* Skeleton para badges */}
+            <Flex gap={3} mt={2} mb={4}>
+              <Skeleton 
+                height="20px" 
+                width="80px" 
+                borderRadius="4px"
+              />
+              <Skeleton 
+                height="20px" 
+                width="100px" 
+                borderRadius="4px"
+              />
+            </Flex>
+            
+            {/* Skeleton para link */}
+            <Skeleton 
+              height="16px" 
+              width="120px" 
+              mt={4}
+              borderRadius="md"
+            />
+          </Box>
+        </Container>
+      </Box>
+    )
+  }
+
+  // Se não há post em destaque, não mostra nada
+  if (!featuredPost) {
     return null
   }
 

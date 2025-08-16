@@ -12,6 +12,7 @@ import {
     Breadcrumb,
     BreadcrumbItem,
     BreadcrumbLink,
+    Skeleton,
 } from '@chakra-ui/react'
 import { FiCalendar, FiUser, FiClock } from 'react-icons/fi'
 import { ChevronRightIcon } from '@chakra-ui/icons'
@@ -109,11 +110,69 @@ export default function PostPage() {
 
     if (loading) {
         return (
-            <Box py={16} bg="#fafafa" minH="100vh">
-                <Container maxW="container.xl">
-                    <Text>Carregando post...</Text>
-                </Container>
-            </Box>
+            <>
+                <Header />
+                <Box
+                    w="100%"
+                    minH="250px"
+                    py={16}
+                    bg="transparent linear-gradient(110deg, #FAFAFA 0%, #FAFAFA 47%, #EBF6FF 75%, #EBF6FF 82%, #FAFAFA 96%, #FAFAFA 100%) 0% 0% no-repeat padding-box"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                >
+                    <Container maxW="container.xl" py={8} alignItems="center" justifyContent="center" textAlign="center">
+                        {/* Skeleton para título */}
+                        <Skeleton 
+                            height="48px" 
+                            width="80%" 
+                            mx="auto"
+                            mb={4}
+                            borderRadius="md"
+                        />
+                        
+                        {/* Skeleton para breadcrumb */}
+                        <Flex justifyContent="center" alignItems="center" mb={6}>
+                            <Skeleton height="20px" width="200px" borderRadius="md" />
+                        </Flex>
+                        
+                        {/* Skeleton para meta info */}
+                        <Flex gap={6} justifyContent="center" flexWrap="wrap">
+                            <Skeleton height="20px" width="120px" borderRadius="md" />
+                            <Skeleton height="20px" width="100px" borderRadius="md" />
+                            <Skeleton height="20px" width="140px" borderRadius="md" />
+                        </Flex>
+                    </Container>
+                </Box>
+
+                <Box bg="#fafafa" minH="100vh">
+                    <Container maxW="container.xl" py={8}>
+                        <Box bg="white" borderRadius="8px" p={8} boxShadow="sm">
+                            {/* Skeleton para categoria */}
+                            <Box mb={8}>
+                                <Skeleton height="24px" width="100px" borderRadius="4px" mb={4} />
+                            </Box>
+                            
+                            {/* Skeleton para imagem destacada */}
+                            <Box mb={8}>
+                                <Skeleton height="400px" width="100%" borderRadius="8px" />
+                            </Box>
+                            
+                            {/* Skeleton para conteúdo */}
+                            <Box>
+                                {[1, 2, 3, 4, 5, 6].map((item) => (
+                                    <Box key={item} mb={4}>
+                                        <Skeleton height="20px" width="100%" borderRadius="md" />
+                                        <Skeleton height="20px" width="90%" borderRadius="md" />
+                                        <Skeleton height="20px" width="95%" borderRadius="md" />
+                                    </Box>
+                                ))}
+                            </Box>
+                        </Box>
+                    </Container>
+                </Box>
+                <Footer />
+            </>
         )
     }
 

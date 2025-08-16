@@ -1,6 +1,6 @@
 // src\components\SitemapShortcode.tsx
 import React, { useEffect, useRef } from 'react'
-import { Box, Container, Heading, Text, Link, VStack, SimpleGrid, Divider, Spinner, Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon } from '@chakra-ui/react'
+import { Box, Container, Heading, Text, Link, VStack, SimpleGrid, Divider, Spinner, Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon, Skeleton } from '@chakra-ui/react'
 import NextLink from 'next/link'
 
 interface SitemapShortcodeProps {
@@ -101,9 +101,144 @@ export default function SitemapShortcode({ showTitle = true, className = '' }: S
 
   if (loading) {
     return (
-      <Box textAlign="center" py={8}>
-        <Spinner size="lg" color="primary.500" />
-        <Text mt={4}>Carregando sitemap...</Text>
+      <Box className={className}>
+        <Container maxW="container.xl" px={4}>
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+            
+            {/* Skeleton para Páginas Principais */}
+            <Box>
+              <Skeleton 
+                height="24px" 
+                width="140px" 
+                mb={4}
+                borderRadius="md"
+              />
+              <VStack align="start" spacing={2}>
+                {[1, 2, 3, 4].map((item) => (
+                  <Skeleton 
+                    key={item}
+                    height="16px" 
+                    width="120px" 
+                    borderRadius="md"
+                  />
+                ))}
+              </VStack>
+            </Box>
+
+            {/* Skeleton para Categorias */}
+            <Box>
+              <Skeleton 
+                height="24px" 
+                width="100px" 
+                mb={4}
+                borderRadius="md"
+              />
+              <VStack align="start" spacing={2}>
+                {[1, 2, 3, 4, 5].map((item) => (
+                  <Skeleton 
+                    key={item}
+                    height="16px" 
+                    width="100px" 
+                    borderRadius="md"
+                  />
+                ))}
+              </VStack>
+            </Box>
+
+            {/* Skeleton para Posts Recentes */}
+            <Box>
+              <Skeleton 
+                height="24px" 
+                width="130px" 
+                mb={4}
+                borderRadius="md"
+              />
+              <VStack align="start" spacing={2}>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
+                  <Skeleton 
+                    key={item}
+                    height="16px" 
+                    width="180px" 
+                    borderRadius="md"
+                  />
+                ))}
+              </VStack>
+            </Box>
+          </SimpleGrid>
+
+          <Divider my={8} />
+
+          {/* Skeleton para Menus de Navegação */}
+          <Box>
+            <Skeleton 
+              height="32px" 
+              width="200px" 
+              mb={6}
+              mx="auto"
+              borderRadius="md"
+            />
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
+              {[1, 2].map((menu) => (
+                <Box key={menu}>
+                  <Skeleton 
+                    height="24px" 
+                    width="120px" 
+                    mb={4}
+                    borderRadius="md"
+                  />
+                  <VStack align="start" spacing={2}>
+                    {[1, 2, 3, 4].map((item) => (
+                      <Skeleton 
+                        key={item}
+                        height="16px" 
+                        width="140px" 
+                        borderRadius="md"
+                      />
+                    ))}
+                  </VStack>
+                </Box>
+              ))}
+            </SimpleGrid>
+          </Box>
+
+          <Divider my={8} />
+
+          {/* Skeleton para Posts por Categoria */}
+          <Box>
+            <Skeleton 
+              height="32px" 
+              width="280px" 
+              mb={6}
+              mx="auto"
+              borderRadius="md"
+            />
+            <VStack spacing={4}>
+              {[1, 2, 3, 4].map((category) => (
+                <Box key={category} w="100%" border="1px solid" borderColor="gray.200" borderRadius="md">
+                  <Box p={4} bg="gray.50" borderTopRadius="md">
+                    <Skeleton 
+                      height="20px" 
+                      width="150px" 
+                      borderRadius="md"
+                    />
+                  </Box>
+                  <Box p={4}>
+                    <VStack align="start" spacing={2}>
+                      {[1, 2, 3].map((item) => (
+                        <Skeleton 
+                          key={item}
+                          height="16px" 
+                          width="200px" 
+                          borderRadius="md"
+                        />
+                      ))}
+                    </VStack>
+                  </Box>
+                </Box>
+              ))}
+            </VStack>
+          </Box>
+        </Container>
       </Box>
     )
   }

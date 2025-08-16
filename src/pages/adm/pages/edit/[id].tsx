@@ -30,7 +30,50 @@ import dayjs from 'dayjs'
 // Importar CKEditor dinamicamente para evitar problemas de SSR
 const PostEditor = dynamic(() => import('../../../../components/PostEditor'), {
   ssr: false,
-  loading: () => <div>Carregando editor...</div>
+  loading: () => (
+    <div style={{ 
+      border: '1px solid #d9d9d9', 
+      borderRadius: '6px', 
+      padding: '16px',
+      background: '#fafafa'
+    }}>
+      {/* Skeleton para barra de ferramentas */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '8px', 
+        marginBottom: '16px',
+        flexWrap: 'wrap'
+      }}>
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
+          <div
+            key={item}
+            style={{
+              width: '32px',
+              height: '32px',
+              background: '#e6e6e6',
+              borderRadius: '4px',
+              animation: 'pulse 1.5s ease-in-out infinite'
+            }}
+          />
+        ))}
+      </div>
+      
+      {/* Skeleton para área de conteúdo */}
+      <div style={{ 
+        minHeight: '200px',
+        background: '#e6e6e6',
+        borderRadius: '4px',
+        animation: 'pulse 1.5s ease-in-out infinite'
+      }} />
+      
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
+    </div>
+  )
 })
 
 const { Title, Text } = Typography
@@ -53,6 +96,8 @@ interface Page {
   custom_css?: string
   custom_js?: string
   published_at?: string
+  created_at: string
+  updated_at: string
   author: {
     id: number
     name: string
@@ -74,7 +119,7 @@ interface FormValues {
   template: string
   custom_css?: string
   custom_js?: string
-  published_at?: any
+  published_at?: dayjs.Dayjs
 }
 
 export default function EditPagePage() {

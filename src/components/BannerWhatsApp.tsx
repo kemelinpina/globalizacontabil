@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Box, Button, Container, Flex, Heading, Text, useBreakpointValue } from '@chakra-ui/react'
+import { Box, Button, Container, Flex, Heading, Text, useBreakpointValue, Skeleton } from '@chakra-ui/react'
 import { FaWhatsapp } from 'react-icons/fa'
 import Link from 'next/link'
 
@@ -45,7 +45,44 @@ export default function BannerWhatsApp() {
 
     // Se está carregando, mostra loading
     if (loading) {
-        return null // Ou um skeleton/loading se preferir
+        return (
+            <Box p={0}>
+                <Container maxW="container.xl" p={0}>
+                    <Flex 
+                        w='100%' 
+                        bg='gray.100'
+                        minH='276px' 
+                        p={8} 
+                        borderRadius='4px' 
+                        gap={4} 
+                        alignItems='center' 
+                        flexDirection='column' 
+                        justifyContent='center'
+                    >
+                        {/* Skeleton para título */}
+                        <Skeleton 
+                            height={isMobile ? '32px' : '40px'} 
+                            width="60%" 
+                            borderRadius="md"
+                        />
+                        
+                        {/* Skeleton para descrição */}
+                        <Skeleton 
+                            height="24px" 
+                            width="80%" 
+                            borderRadius="md"
+                        />
+                        
+                        {/* Skeleton para botão */}
+                        <Skeleton 
+                            height="48px" 
+                            width={isMobile ? '100%' : '200px'} 
+                            borderRadius="4px"
+                        />
+                    </Flex>
+                </Container>
+            </Box>
+        )
     }
 
     // Se há erro, não mostra o banner
