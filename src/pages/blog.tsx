@@ -171,7 +171,7 @@ export default function Blog() {
                     lineHeight="1.2"
                     textAlign="center"
                 >
-                    Conteúdo <Text as="span" color="red.500">Contabiliza Contábil</Text>
+                    Conteúdo <Text as="span" color="red.500">Globaliza Contábil</Text>
                 </Heading>
                 <Text
                     as='p'
@@ -324,11 +324,6 @@ export default function Blog() {
                                                                     <Text>{post.reading_time} min de leitura</Text>
                                                                 </Flex>
                                                             )}
-
-                                                            <Flex alignItems="center" gap={1}>
-                                                                <Icon as={FiEye} />
-                                                                <Text>{post.view_count || 0} visualizações</Text>
-                                                            </Flex>
                                                         </Flex>
                                                     </Box>
                                                 </Flex>
