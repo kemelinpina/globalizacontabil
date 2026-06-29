@@ -8,13 +8,25 @@ const defaultClient = SibApiV3Sdk.ApiClient.instance
 const apiKey = defaultClient.authentications['api-key']
 apiKey.apiKey = process.env.BREVO_API_KEY || ''
 
+function getBrevoErrorMessage(error: unknown): string {
+  if (!error || typeof error !== 'object') return 'Erro desconhecido ao enviar email'
+
+  const brevoError = error as {
+    response?: { body?: { message?: string; code?: string }; text?: string }
+    message?: string
+  }
+
+  return (
+    brevoError.response?.body?.message ||
+    brevoError.response?.text ||
+    brevoError.message ||
+    'Erro desconhecido ao enviar email'
+  )
+}
+
 // Verificar se as variáveis de ambiente estão configuradas
 if (!process.env.BREVO_API_KEY) {
   console.error('BREVO_API_KEY não está configurada nas variáveis de ambiente')
-}
-
-if (!process.env.BREVO_SMTP_USER) {
-  console.error('BREVO_SMTP_USER não está configurada nas variáveis de ambiente')
 }
 
 const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi()
@@ -100,7 +112,7 @@ export class EmailService {
       console.log('Email enviado com sucesso:', response)
       return true
     } catch (error) {
-      console.error('Erro ao enviar email:', error)
+      console.error('Erro ao enviar email:', getBrevoErrorMessage(error), error)
       return false
     }
   }
