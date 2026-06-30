@@ -128,7 +128,11 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(userEmail: string, resetToken: string): Promise<boolean> {
-    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://globalizacontabil.com.br'}/adm/reset-password?token=${resetToken}`
+    const baseUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      'https://globalizacontabil.com.br'
+    const resetUrl = `${baseUrl}/adm/reset-password?token=${resetToken}`
     const htmlContent = emailTemplates.passwordReset(resetUrl)
 
     return this.sendEmail({
