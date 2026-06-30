@@ -115,26 +115,22 @@ export default function LoginPage() {
         setForgotEmail('')
       } else {
         toast({
-          title: 'Email enviado!',
-          description: 'Caso o e-mail esteja cadastrado no sistema, logo você receberá um email para cadastrar o novo acesso.',
-          status: 'success',
+          title: 'Não foi possível enviar',
+          description: data.message || 'Tente novamente em alguns minutos.',
+          status: 'error',
           duration: 5000,
           isClosable: true,
         })
-        onClose()
-        setForgotEmail('')
       }
     } catch (error) {
       console.error('Erro ao enviar email de recuperação:', error)
       toast({
-        title: 'Email enviado!',
-        description: 'Caso o e-mail esteja cadastrado no sistema, logo você receberá um email para cadastrar o novo acesso.',
-        status: 'success',
+        title: 'Erro de conexão',
+        description: 'Não foi possível contactar o servidor. Tente novamente.',
+        status: 'error',
         duration: 5000,
         isClosable: true,
       })
-      onClose()
-      setForgotEmail('')
     } finally {
       setForgotLoading(false)
     }
