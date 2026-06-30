@@ -1,6 +1,5 @@
 import * as SibApiV3Sdk from 'sib-api-v3-sdk'
 import { emailTemplates } from './htmlEmails'
-import { debugLog } from '../lib/debugLog'
 
 // Configuração da API do Brevo usando as credenciais SMTP corretas
 const defaultClient = SibApiV3Sdk.ApiClient.instance
@@ -109,33 +108,10 @@ export class EmailService {
       console.log('Remetente:', sendSmtpEmail.sender)
 
       const response = await apiInstance.sendTransacEmail(sendSmtpEmail)
-      
-      // #region agent log
-      debugLog({
-        location: 'emailService.ts:send-success',
-        message: 'brevo email sent',
-        data: { to: emailData.to, subject: emailData.subject },
-        hypothesisId: 'C',
-        runId: 'pre-fix',
-      })
-      // #endregion
 
       console.log('Email enviado com sucesso:', response)
       return true
     } catch (error) {
-      // #region agent log
-      debugLog({
-        location: 'emailService.ts:send-error',
-        message: 'brevo email failed',
-        data: {
-          to: emailData.to,
-          brevoError: getBrevoErrorMessage(error),
-          hasApiKey: Boolean(process.env.BREVO_API_KEY),
-        },
-        hypothesisId: 'C',
-        runId: 'pre-fix',
-      })
-      // #endregion
       console.error('Erro ao enviar email:', getBrevoErrorMessage(error), error)
       return false
     }

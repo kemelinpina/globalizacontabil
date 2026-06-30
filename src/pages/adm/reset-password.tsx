@@ -10,10 +10,9 @@ import {
   Card,
   CardBody,
   Text,
-  Link,
-  Flex,
+  Spinner,
 } from '@chakra-ui/react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import Image from 'next/image'
@@ -22,16 +21,10 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [token, setToken] = useState('')
   const router = useRouter()
   const toast = useToast()
 
-  useEffect(() => {
-    const { token: urlToken } = router.query
-    if (urlToken && typeof urlToken === 'string') {
-      setToken(urlToken)
-    }
-  }, [router.query])
+  const token = typeof router.query.token === 'string' ? router.query.token : ''
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -114,15 +107,29 @@ export default function ResetPasswordPage() {
     }
   }
 
+  const pageBackground =
+    'transparent linear-gradient(110deg, #FAFAFA 0%, #FAFAFA 47%, #EBF6FF 75%, #EBF6FF 82%, #FAFAFA 96%, #FAFAFA 100%) 0% 0% no-repeat padding-box'
+
+  if (!router.isReady) {
+    return (
+      <Box as="main" minH="100vh" display="flex" alignItems="center" background={pageBackground}>
+        <Container maxW="md">
+          <Card shadow="xl" borderRadius="lg" bg="white">
+            <CardBody>
+              <VStack spacing={4} py={8}>
+                <Spinner size="lg" color="primary.500" />
+                <Text color="gray.600">Carregando link de redefinição...</Text>
+              </VStack>
+            </CardBody>
+          </Card>
+        </Container>
+      </Box>
+    )
+  }
+
   if (!token) {
     return (
-      <Box
-        as="main"
-        minH="100vh"
-        display="flex"
-        alignItems="center"
-        background="transparent linear-gradient(110deg, #FAFAFA 0%, #FAFAFA 47%, #EBF6FF 75%, #EBF6FF 82%, #FAFAFA 96%, #FAFAFA 100%) 0% 0% no-repeat padding-box"
-      >
+      <Box as="main" minH="100vh" display="flex" alignItems="center" background={pageBackground}>
         <Container maxW="md">
           <Card shadow="xl" borderRadius="lg" bg="white">
             <CardBody>
@@ -130,10 +137,7 @@ export default function ResetPasswordPage() {
                 <Text textAlign="center" fontSize="lg">
                   Link de redefinição inválido ou expirado.
                 </Text>
-                <Button
-                  colorScheme="primary"
-                  onClick={() => router.push('/adm')}
-                >
+                <Button colorScheme="primary" onClick={() => router.push('/adm')}>
                   Voltar ao Login
                 </Button>
               </VStack>
@@ -150,19 +154,9 @@ export default function ResetPasswordPage() {
         <title>Redefinir Senha - Globaliza Contabil</title>
       </Head>
 
-      <Box
-        as="main"
-        minH="100vh"
-        display="flex"
-        alignItems="center"
-        background="transparent linear-gradient(110deg, #FAFAFA 0%, #FAFAFA 47%, #EBF6FF 75%, #EBF6FF 82%, #FAFAFA 96%, #FAFAFA 100%) 0% 0% no-repeat padding-box"
-      >
+      <Box as="main" minH="100vh" display="flex" alignItems="center" background={pageBackground}>
         <Container maxW="md">
-          <Card
-            shadow="xl"
-            borderRadius="lg"
-            bg="white"
-          >
+          <Card shadow="xl" borderRadius="lg" bg="white">
             <CardBody>
               <VStack spacing={6}>
                 <Box textAlign="center">
@@ -174,16 +168,14 @@ export default function ResetPasswordPage() {
                       height={50}
                       style={{
                         objectFit: 'contain',
-                        margin: '0 auto'
+                        margin: '0 auto',
                       }}
                     />
                   </Box>
                   <Text fontSize="xl" fontWeight="bold" mb={2}>
                     Redefinir Senha
                   </Text>
-                  <Text color="gray.600">
-                    Digite sua nova senha
-                  </Text>
+                  <Text color="gray.600">Digite sua nova senha</Text>
                 </Box>
 
                 <form onSubmit={handleSubmit} style={{ width: '100%' }}>
@@ -233,12 +225,8 @@ export default function ResetPasswordPage() {
                       width="full"
                       isLoading={loading}
                       bg="primary.500"
-                      _hover={{
-                        bg: 'primary.600',
-                      }}
-                      _active={{
-                        bg: 'primary.700',
-                      }}
+                      _hover={{ bg: 'primary.600' }}
+                      _active={{ bg: 'primary.700' }}
                       fontWeight="semibold"
                       fontSize="md"
                     >
