@@ -88,9 +88,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Busca por título, slug ou conteúdo
       if (search) {
         where.OR = [
-          { title: { contains: search as string } },
-          { slug: { contains: search as string } },
-          { excerpt: { contains: search as string } },
+          { title: { contains: search as string, mode: 'insensitive' } },
+          { slug: { contains: search as string, mode: 'insensitive' } },
+          { excerpt: { contains: search as string, mode: 'insensitive' } },
         ]
       }
 

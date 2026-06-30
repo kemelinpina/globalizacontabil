@@ -6,8 +6,8 @@ import emailService from '../../../utils/emailService'
 interface WhereClause {
   is_active?: boolean
   OR?: Array<{
-    name?: { contains: string }
-    email?: { contains: string }
+    name?: { contains: string; mode?: 'insensitive' }
+    email?: { contains: string; mode?: 'insensitive' }
   }>
 }
 
@@ -34,8 +34,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       if (search) {
         where.OR = [
-          { name: { contains: search as string } },
-          { email: { contains: search as string } },
+          { name: { contains: search as string, mode: 'insensitive' } },
+          { email: { contains: search as string, mode: 'insensitive' } },
         ]
       }
 

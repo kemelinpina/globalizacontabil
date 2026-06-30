@@ -7,9 +7,9 @@ interface WhereClause {
   slug?: string
   is_featured?: boolean
   OR?: Array<{
-    title?: { contains: string }
-    content?: { contains: string }
-    excerpt?: { contains: string }
+    title?: { contains: string; mode?: 'insensitive' }
+    content?: { contains: string; mode?: 'insensitive' }
+    excerpt?: { contains: string; mode?: 'insensitive' }
   }>
 }
 
@@ -52,11 +52,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       
       if (search) {
-        // Para SQLite, usar contains sem mode
         where.OR = [
-          { title: { contains: search as string } },
-          { content: { contains: search as string } },
-          { excerpt: { contains: search as string } },
+          { title: { contains: search as string, mode: 'insensitive' } },
+          { content: { contains: search as string, mode: 'insensitive' } },
+          { excerpt: { contains: search as string, mode: 'insensitive' } },
         ]
       }
       

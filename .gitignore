@@ -47,3 +47,7 @@ next-env.d.ts
 #Databases
 /prisma/dev-copy.db
 /prisma/1dev.db
+/prisma/legacy
+*.db
+*.db-wal
+*.db-shm
